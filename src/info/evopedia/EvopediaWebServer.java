@@ -58,8 +58,10 @@ public class EvopediaWebServer implements Runnable {
 
     public void bindSocket() {
         try {
+//            socket = new ServerSocket(0, 0,
+//                    InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }));
             socket = new ServerSocket(0, 0,
-                    InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }));
+                    InetAddress.getByAddress(new byte[] { 0, 0, 0, 0 }));
         } catch (UnknownHostException e) {
             socket = null;
         } catch (IOException e) {
@@ -108,7 +110,7 @@ public class EvopediaWebServer implements Runnable {
                 } else if (pathSegments.get(1).equals("evopedia.js")) {
                     contentType = "text/javascript";
                 }
-                outputResponse(client, getAssetFile("/static/" + pathSegments.get(1)), contentType);
+                outputResponse(client, getAssetFile("static/" + pathSegments.get(1)), contentType);
             }
         });
 
@@ -165,10 +167,10 @@ public class EvopediaWebServer implements Runnable {
                 }
                 /* TODO header stuff */
                 /* TODO we have too much copying going on here and in outputResponse */
-                ByteArrayOutputStream data = new ByteArrayOutputStream();
+                ByteArrayOutputStream data = new ByteArrayOutputStream(article.length);
                 data.write(getHTMLHeader());
                 /* TODO some links */
-                data.write("</div>")
+                data.write("</div>".getBytes());
                 /* TODO rtl */
                 data.write(article);
                 data.write(getAssetFile("footer.html"));
@@ -207,6 +209,7 @@ public class EvopediaWebServer implements Runnable {
             }
             client.close();
         } catch (IOException exc) {
+            Log.e("EvopediaWebServer", "IOException", exc);
         } finally {
             try {
                 client.close();
@@ -255,9 +258,7 @@ public class EvopediaWebServer implements Runnable {
     private byte[] getHTMLHeader() throws IOException {
         String header = new String(getAssetFile("header.html"));
         header = header.replace("OPENSEARCHHEADERS", ""); /* TODO */
-        return header.enc
-        /* TODO replace opensearch stuff */
-        return 
+        return header.getBytes();
     }
 
     private byte[] getAssetFile(String name) throws IOException {
@@ -269,7 +270,7 @@ public class EvopediaWebServer implements Runnable {
             if (n < 0) {
                 return data.toByteArray();
             } else {
-                data.write(buf);
+                data.write(buf, 0, n);
             }
         }
     }

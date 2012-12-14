@@ -199,29 +199,16 @@ public class LocalArchive extends Archive {
 		    return null;
 
 		String filename = String.format(Locale.US, "wikipedia_%02d.dat", title.getFileNr());
-		byte[] block = new byte[(int) (title.getBlockOffset() + title.getArticleLength())];
 		try {
-			BufferedInputStream in = new BufferedInputStream(new FileInputStream(new File(directory, filename)));
-			in.skip(title.getBlockStart() + 2); /* skip two header bytes */
-			CBZip2InputStream bzip = new CBZip2InputStream(in);
-
-			int read = 0;
-			while (read < block.length) {
-				int r = bzip.read(block, read, block.length - read);
-				if (r == -1)
-					break;
-				read += r;
-			}
+		    return BZReader.readAt(new FileInputStream(new File(directory, filename)),
+		                          title.getBlockStart(), title.getBlockOffset(),
+		                          title.getArticleLength());
 		} catch (FileNotFoundException exc1) {
 			return null;
 		} catch (IOException exc2) {
 			Log.e("LocalArchive", "Error reading article", exc2);
 			return null;
 		}
-
-		byte[] articleData = new byte[(int) title.getArticleLength()];
-		System.arraycopy(block, (int) title.getBlockOffset(), articleData, 0, articleData.length);
-		return articleData;
 	}
 	
 	public StringNormalizer getStringNormalizer() {
