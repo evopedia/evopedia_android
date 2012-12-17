@@ -1,15 +1,15 @@
 package info.evopedia;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Locale;
 
-import org.apache.tools.bzip2.CBZip2InputStream;
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Wini;
 

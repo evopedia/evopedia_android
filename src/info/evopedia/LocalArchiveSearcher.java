@@ -1,15 +1,12 @@
 package info.evopedia;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Environment;
 
 public class LocalArchiveSearcher extends AsyncTask<File, Long, Map<ArchiveID, LocalArchive>> {
 	private ArchiveManager manager;

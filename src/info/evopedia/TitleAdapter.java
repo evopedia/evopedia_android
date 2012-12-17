@@ -2,17 +2,12 @@ package info.evopedia;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import android.content.Context;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.BaseAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.TextView;
 
 public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiveChangeListener {

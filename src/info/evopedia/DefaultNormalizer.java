@@ -4,12 +4,9 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.Locale;
 
-import android.app.ListActivity;
-import android.content.Context;
 import android.util.Log;
 
 public class DefaultNormalizer implements StringNormalizer {
