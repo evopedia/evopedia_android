@@ -28,7 +28,7 @@ public class Title implements Comparable<Title> {
 		if (encodedTitle == null || encodedTitle.length < 15)
 			return null;
 
-		int escapes = readUInt16(encodedTitle, 0);
+		int escapes = LittleEndianReader.readUInt16(encodedTitle, 0);
 		byte[] positionData = new byte[13];
 		System.arraycopy(encodedTitle, 2, positionData, 0, 13);
 
@@ -40,10 +40,10 @@ public class Title implements Comparable<Title> {
 				positionData[i] = '\n';
 		}
 
-		t.fileNr = readUInt8(positionData, 0);
-		t.blockStart = readUInt32(positionData, 1);
-		t.blockOffset = readUInt32(positionData, 5);
-		t.articleLength = readUInt32(positionData, 9);
+		t.fileNr = LittleEndianReader.readUInt8(positionData, 0);
+		t.blockStart = LittleEndianReader.readUInt32(positionData, 1);
+		t.blockOffset = LittleEndianReader.readUInt32(positionData, 5);
+		t.articleLength = LittleEndianReader.readUInt32(positionData, 9);
 
 		int titleLenBytes = encodedTitle.length - 15;
 		if (titleLenBytes > 0 && encodedTitle[encodedTitle.length - 1] == '\n')
@@ -62,22 +62,6 @@ public class Title implements Comparable<Title> {
 	    String thisName = archive.getStringNormalizer().normalize(name);
 	    String otherName = other.archive.getStringNormalizer().normalize(other.name);
 	    return thisName.compareTo(otherName);
-	}
-
-	private static long readUInt32(byte[] data, int offset) {
-		return (((long) data[offset + 3] & 0xffL) << 24) +
-		        (((long) data[offset + 2] & 0xffL) << 16) +
-		        (((long) data[offset + 1] & 0xffL) << 8) +
-		        (((long) data[offset + 0] & 0xffL));
-	}
-
-	private static int readUInt16(byte[] data, int offset) {
-		return (((int) data[offset + 1] & 0xff) << 8) +
-		         ((int) data[offset + 0] & 0xff);
-	}
-
-	private static short readUInt8(byte[] data, int offset) {
-		return (short) ((int) data[offset] & 0xff);
 	}
 
 	public String getName() {

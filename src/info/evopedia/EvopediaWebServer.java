@@ -138,6 +138,11 @@ public class EvopediaWebServer implements Runnable {
                     outputHttpHeader(client, "404");
                     return;
                 }
+                if (pathSegments.get(1).equals("math")) {
+                    /* this is actually a math image */
+                    /* TODO redirect */
+                    return;
+                }
 
                 String articleName = pathSegments.get(pathSegments.size() - 1);
                 String language = pathSegments.size() >= 3 ? pathSegments.get(1) : null;
@@ -170,6 +175,25 @@ public class EvopediaWebServer implements Runnable {
         };
         pathMappings.put("wiki", articleRequestHandler);
         pathMappings.put("articles", articleRequestHandler);
+
+        pathMappings.put("math", new RequestHandler() {
+            @Override
+            public void handleRequest(Socket client, Uri uri,
+                    List<String> pathSegments) throws IOException {
+                String hexStr = pathSegments.get(pathSegments.size() - 1);
+                hexStr.substring(hexStr.length() - 32);
+                byte[] hash = (new BigInteger(hexStr, 16)).toByteArray();
+                for (LocalArchive a : manager.getDefaultLocalArchives().values()) {
+                    byte[] data = a.getMathImage(hash);
+                    if (data != null) {
+                        outputResponse(client, data, "image/png");
+                        return;
+                    }
+                }
+                outputHttpHeader(client, "404");
+            }
+        });
+
 
         /*
          * TODO math random searchsuggest search settings

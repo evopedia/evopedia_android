@@ -23,6 +23,8 @@ public class LocalArchive extends Archive {
 	private String directory;
 	private Boolean readable;
 	private File titleFile;
+	private File mathIndexFile;
+	private File mathDataFile;
 
 	private String dumpOrigURL;
 	private String dumpVersion;
@@ -47,6 +49,9 @@ public class LocalArchive extends Archive {
 			readable = false;
 			return;
 		}
+
+		mathIndexFile = new File(directory, "math.idx");
+		mathDataFile = new File(directory, "math.dat");
 
 		normalizedTitles = true;
 
@@ -94,6 +99,45 @@ public class LocalArchive extends Archive {
 			normalizedTitles = false;
 		}
 		return true;
+	}
+
+	public byte[] getMathImage(byte[] hexHash) throws IOException {
+	    if (hexHash == null || hexHash.length != 16) {
+	        throw new IllegalArgumentException("Invalid hexHash");
+	    }
+
+	    RandomAccessFile f = new RandomAccessFile(mathIndexFile, "r");
+
+	    long pos = -1, length = -1;
+
+	    final int entrysize = 16 + 4 + 4;
+	    long lo = 0;
+	    long hi = f.length() / entrysize;
+	    while (lo < hi) {
+	        long mid = (lo + hi) / 2;
+	        f.seek(mid * entrysize);
+            byte[] entryHash = new byte[16];
+	        f.readFully(entryHash);
+	        int c = LittleEndianReader.compareByteArrays(hexHash, entryHash);
+	        if (c == 0) {
+                pos = LittleEndianReader.readUInt32(f);
+                length = LittleEndianReader.readUInt32(f);
+                break;
+	        } else if (c < 0) {
+	            hi = mid;
+	        } else {
+	            lo = mid + 1;
+	        }
+	    }
+	    if (pos < 0 || length <= 0)
+	        return null;
+
+        f = new RandomAccessFile(mathDataFile, "r");
+	    f.seek(pos);
+
+	    byte[] data = new byte[(int) length];
+	    f.readFully(data);
+	    return data;
 	}
 
 	public Title getTitle(String name) {
