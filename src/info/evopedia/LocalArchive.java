@@ -6,8 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Locale;
 
 import org.ini4j.InvalidFileFormatException;
@@ -118,7 +116,7 @@ public class LocalArchive extends Archive {
 	        f.seek(mid * entrysize);
             byte[] entryHash = new byte[16];
 	        f.readFully(entryHash);
-	        int c = LittleEndianReader.compareByteArrays(hexHash, entryHash);
+	        int c = Utils.compareByteArrays(hexHash, entryHash);
 	        if (c == 0) {
                 pos = LittleEndianReader.readUInt32(f);
                 length = LittleEndianReader.readUInt32(f);

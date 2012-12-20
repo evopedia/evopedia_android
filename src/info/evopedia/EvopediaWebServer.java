@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -180,9 +179,15 @@ public class EvopediaWebServer implements Runnable {
             @Override
             public void handleRequest(Socket client, Uri uri,
                     List<String> pathSegments) throws IOException {
-                String hexStr = pathSegments.get(pathSegments.size() - 1);
-                hexStr.substring(hexStr.length() - 32);
-                byte[] hash = (new BigInteger(hexStr, 16)).toByteArray();
+                String hexStr = pathSegments.get(pathSegments.size() - 1).substring(0, 32);
+
+                byte[] hash;
+                try {
+                    hash = Utils.decodeHexString(hexStr);
+                } catch (IllegalArgumentException exc) {
+                    outputHttpHeader(client, "404");
+                    return;
+                }
                 for (LocalArchive a : manager.getDefaultLocalArchives().values()) {
                     byte[] data = a.getMathImage(hash);
                     if (data != null) {
@@ -222,7 +227,6 @@ public class EvopediaWebServer implements Runnable {
             } else {
                 handler.handleRequest(client, uri, pathSegments);
             }
-            client.close();
         } catch (IOException exc) {
             Log.e("EvopediaWebServer", "IOException", exc);
         } finally {

@@ -52,16 +52,4 @@ public class LittleEndianReader {
         f.readFully(data);
         return readUInt8(data, 0);
     }
-
-    public static final int compareByteArrays(byte[] a, byte[] b) {
-        if (a == null || b == null)
-            throw new NullPointerException();
-
-        int l = Math.min(a.length, b.length);
-        for (int i = 0; i < l; i ++) {
-            int c = a[i] - b[i];
-            if (c != 0) return c;
-        }
-        return a.length - b.length;
-    }
 }

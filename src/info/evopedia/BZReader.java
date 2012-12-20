@@ -15,7 +15,10 @@ public class BZReader {
         if (stream == null) {
             throw new NullPointerException("input stream is null");
         }
-        stream.skip(blockStart + 2); /* skip two header bytes */
+        /* also skip "BZ" header */
+        for (long i = 0; i < blockStart + 2; ) {
+            i += stream.skip(blockStart + 2 - i);
+        }
 
         byte[] data = new byte[(int) dataLength];
         try {
