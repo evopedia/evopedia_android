@@ -19,6 +19,7 @@ import android.widget.ListView;
 
 public class EvopediaSearch extends Activity implements OnScrollListener, OnItemClickListener, TextWatcher {
 	private TitleAdapter titleAdapter;
+	private ListView titleListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +29,7 @@ public class EvopediaSearch extends Activity implements OnScrollListener, OnItem
 
         setContentView(R.layout.activity_evopedia_search);
 
-        ListView titleListView = (ListView) findViewById(R.id.titleListView);
+        titleListView = (ListView) findViewById(R.id.titleListView);
         titleListView.setAdapter(titleAdapter);
         titleListView.setOnScrollListener(this);
         titleListView.setOnItemClickListener(this);
@@ -77,6 +78,8 @@ public class EvopediaSearch extends Activity implements OnScrollListener, OnItem
 	@Override
 	public void afterTextChanged(Editable e) {
 		titleAdapter.setPrefix(e.toString());
+		/* TODO scrolling to origin does not work yet */
+		titleListView.scrollTo(0, 0);
 	}
 
 	@Override
