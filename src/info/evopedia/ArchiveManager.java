@@ -208,7 +208,7 @@ public class ArchiveManager {
 	}
 
 	public static ArchiveManager getInstance(Context context) {
-		if (instance == null) {
+		if (instance == null && context != null) {
 			instance = new ArchiveManager(context.getApplicationContext());
 		}
 		return instance;

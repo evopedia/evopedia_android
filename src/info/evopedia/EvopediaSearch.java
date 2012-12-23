@@ -93,9 +93,7 @@ public class EvopediaSearch extends Activity implements OnScrollListener, OnItem
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-	    Evopedia evopedia = (Evopedia) this.getApplication();
-	    Uri uri = evopedia.getArticleUri(titleAdapter.getItem(position));
-	    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+	    Intent intent = new Intent(Intent.ACTION_VIEW, titleAdapter.getItem(position).toUri());
 	    startActivity(intent);
 	}
 }

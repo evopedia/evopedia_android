@@ -201,7 +201,7 @@ public class EvopediaWebServer implements Runnable {
 
 
         /*
-         * TODO math random searchsuggest search settings
+         * TODO random searchsuggest search settings
          * select_archive_location add_archive exit map opensearch
          */
     }
