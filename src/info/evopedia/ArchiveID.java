@@ -28,8 +28,8 @@ public class ArchiveID implements Comparable<ArchiveID> {
     		return false;
 
     	ArchiveID otherAID = (ArchiveID) other;
-		return (this.language == otherAID.language &&
-				 this.date == otherAID.date);
+		return (this.language.equals(otherAID.language) &&
+				 this.date.equals(otherAID.date));
     }
 
 	@Override
@@ -37,10 +37,11 @@ public class ArchiveID implements Comparable<ArchiveID> {
 		if (other == null)
 			return 1;
 
-		if (this.language == other.language) {
-			return -this.date.compareTo(other.date);
+		int c = this.language.compareTo(other.language);
+		if (c != 0) {
+		    return c;
 		} else {
-			return this.language.compareTo(other.language);
+		    return -this.date.compareTo(other.date);
 		}
 	}
 

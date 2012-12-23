@@ -1,5 +1,6 @@
 package info.evopedia;
 
+import android.content.Context;
 import android.net.Uri;
 
 public class Title implements Comparable<Title> {
@@ -107,17 +108,27 @@ public class Title implements Comparable<Title> {
 	/* TODO I think these should be moved somewhere else */
 	public Uri toUri() {
 		if (name == null) return null;
-		return Uri.parse("evopedia://" + archive.getLanguage() + "_" + archive.getDate() + "/@" + titleOffset);
+		return Uri.parse("evopedia://" + archive.getLanguage() + "_" + archive.getDate() + "/#" + titleOffset);
 	}
 
-	public static ArchiveID archiveIDFromUri(Uri uri) {
-		if (uri.getScheme() != "evopedia") return null;
-		String[] parts = uri.getHost().split("_");
-		return new ArchiveID(parts[0], parts[1]);
-	}
+	public static Title fromUri(Uri uri) {
+	    if (!uri.getScheme().equals("evopedia"))
+	        return null;
 
-	public static long titleOffsetFromUri(Uri uri) {
-		if (uri.getScheme() != "evopedia") return -1;
-		return Long.parseLong(uri.getEncodedPath().substring(2));
+	    String[] hostParts = uri.getHost().split("_");
+	    ArchiveID id = new ArchiveID(hostParts[0], hostParts[1]);
+
+	    Archive a = ArchiveManager.getInstance(null).getArchive(id);
+	    if (a == null || !(a instanceof LocalArchive))
+	        return null;
+
+	    long offset;
+	    try {
+	        offset = Long.parseLong(uri.getEncodedFragment());
+	    } catch (NumberFormatException exc) {
+	        return null;
+	    }
+
+	    return ((LocalArchive) a).getTitleAtOffset(offset);
 	}
 }
