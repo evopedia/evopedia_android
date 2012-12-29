@@ -20,8 +20,10 @@ public class ArchiveManager {
 
 	private DefaultNormalizer defaultNormalizer;
 
-	private HashMap<ArchiveID, Archive> archives;
-	private HashMap<String, LocalArchive> defaultLocalArchives;
+	private AvailableArchivesDatabase availableArchivesDatabase;
+
+	private Map<ArchiveID, Archive> archives;
+	private Map<String, LocalArchive> defaultLocalArchives;
 	private boolean archiveBulkChangeUnderway;
 
 	public interface OnArchiveChangeListener {
@@ -35,14 +37,14 @@ public class ArchiveManager {
 		this.context = context;
 
 		initializeNormalizer();
-		archiveBulkChangeUnderway = true;
-		try {
-			initializeArchives();
-		} finally {
-			archiveBulkChangeUnderway = false;
-			updateDefaultLocalArchives();
-			fireOnArchiveChange(true);
-		}
+
+		availableArchivesDatabase = new AvailableArchivesDatabase(context);
+		archives = new HashMap<ArchiveID, Archive>();
+        defaultLocalArchives = new HashMap<String, LocalArchive>();
+        archives = availableArchivesDatabase.getArchives();
+
+        updateDefaultLocalArchives();
+		fireOnArchiveChange(true);
 	}
 
 	private void initializeNormalizer() {
@@ -52,44 +54,6 @@ public class ArchiveManager {
 
 	public StringNormalizer getDefaultNormalizer() {
 		return defaultNormalizer;
-	}
-
-	private void initializeArchives() {
-		archives = new HashMap<ArchiveID, Archive>();
-		defaultLocalArchives = new HashMap<String, LocalArchive>();
-
-		SharedPreferences prefs = context.getSharedPreferences("Evopedia", 0);
-		String[] archives = prefs.getString("archives", "").split(",");
-		if (archives == null || archives.length == 0)
-			return;
-
-		for (String archiveName : archives) {
-			if (prefs.getBoolean("archives/" + archiveName + "/complete", false)) {
-				String dataDirectory = prefs.getString("archives/" + archiveName + "/data_directory", "");
-				LocalArchive archive = new LocalArchive(dataDirectory, defaultNormalizer);
-				if (archive.isReadable()) {
-					addArchiveInternal(archive);
-				}
-			}
-		}
-	}
-
-	private boolean addArchiveInternal(Archive archive) {
-		ArchiveID id = archive.getID();
-
-		if (archives.containsKey(id)) {
-			Archive current = archives.get(id);
-			/* TODO some magic to determine which archive is "more local".
-			 * currently, there is only an implementation of LocalArchive, so do this later
-			 */
-			return false;
-		}
-		archives.put(id, archive);
-
-		if (!archiveBulkChangeUnderway)
-			updateDefaultLocalArchives();
-
-		return true;
 	}
 
 	private void updateDefaultLocalArchives() {
@@ -109,51 +73,54 @@ public class ArchiveManager {
 		defaultLocalArchives = newDefaultLocalArchives;
 	}
 
-	private boolean addArchiveAndStoreInPrefs(Archive archive) {
-		if (!addArchiveInternal(archive))
-			return false;
-		if (!(archive instanceof LocalArchive))
-			return true;
+	private boolean addArchive(Archive archive) {
+        ArchiveID id = archive.getID();
 
-		LocalArchive larchive = (LocalArchive) archive;
+        if (archives.containsKey(id)) {
+            /* only add archive, if it is more "local" than the current one */
+            Archive current = archives.get(id);
+            if (!archive.isMoreLocal(current) && !(current instanceof DownloadableArchive))
+                return false;
+        }
+        archives.put(id, archive);
 
-		SharedPreferences prefs = context.getSharedPreferences("Evopedia", 0);
-		Editor prefsEditor = prefs.edit();
+        availableArchivesDatabase.putArchive(archive);
 
-		HashSet<String> archives = new HashSet<String>(Arrays.asList(prefs.getString("archives", "").split(",")));
-		archives.remove("");
+        if (archiveBulkChangeUnderway)
+            return true;
 
-		String archiveName = larchive.getID().toString();
-		archives.add(archiveName);
-
-		StringBuilder archiveList = new StringBuilder("");
-		for (String an : archives) {
-			if (archiveList.length() > 0)
-				archiveList.append(",");
-			archiveList.append(an);
-		}
-		prefsEditor.putString("archives", archiveList.toString());
-
-		prefsEditor.putBoolean("archives/" + archiveName + "/complete", true);
-		prefsEditor.putString("archives/" + archiveName + "/data_directory", larchive.getDirectory());
-		prefsEditor.apply();
+        updateDefaultLocalArchives();
+        fireOnArchiveChange(archive instanceof LocalArchive);
 
 		return true;
 	}
 
-	public boolean addArchive(Archive archive) {
-		if (addArchiveAndStoreInPrefs(archive)) {
-			fireOnArchiveChange(archive instanceof LocalArchive);
-			return true;
-		} else {
-			return false;
-		}
+	public void removeArchive(Archive archive) {
+	    archives.remove(archive.getID());
+	    availableArchivesDatabase.removeArchive(archive);
+
+        if (!archiveBulkChangeUnderway) {
+            updateDefaultLocalArchives();
+            fireOnArchiveChange(archive instanceof LocalArchive);
+        }
 	}
 
-	public boolean removeArchive(Archive archive) {
-		/* TODO */
-		return false;
-	}
+    public void setDownloadableArchives(Map<ArchiveID, DownloadableArchive> newArchives) {
+        archiveBulkChangeUnderway = true;
+        try {
+            for (Archive archive : archives.values()) {
+                if (archive instanceof DownloadableArchive)
+                    removeArchive(archive);
+            }
+            for (Archive archive : newArchives.values()) {
+                addArchive(archive);
+            }
+        } finally {
+            archiveBulkChangeUnderway = false;
+            updateDefaultLocalArchives();
+            fireOnArchiveChange(true);
+        }
+    }
 
 	public void setLocalArchives(Map<ArchiveID, LocalArchive> newArchives) {
 		HashMap<ArchiveID, LocalArchive> currentLocalArchives = new HashMap<ArchiveID, LocalArchive>();
@@ -172,7 +139,7 @@ public class ArchiveManager {
 				removeArchive(archive);
 			}
 			for (Archive archive : newArchives.values()) {
-				addArchiveAndStoreInPrefs(archive);
+				addArchive(archive);
 			}
 		} finally {
 			archiveBulkChangeUnderway = false;

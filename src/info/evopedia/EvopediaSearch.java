@@ -1,6 +1,7 @@
 package info.evopedia;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class EvopediaSearch extends Activity implements OnScrollListener, OnItemClickListener, TextWatcher {
 	private TitleAdapter titleAdapter;
@@ -54,7 +56,8 @@ public class EvopediaSearch extends Activity implements OnScrollListener, OnItem
     		    	LocalArchiveSearcher searcher = new LocalArchiveSearcher(this);
     		    	searcher.execute(Environment.getExternalStorageDirectory());
     		    } else {
-    		    	/* TODO message box */
+    		        /* TODO test that */
+    		        Toast.makeText(this, "External storage not mounted.", Toast.LENGTH_SHORT).show();
     		    }
     		case R.id.menu_settings:
     		default:

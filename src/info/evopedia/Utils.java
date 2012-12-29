@@ -1,6 +1,11 @@
 package info.evopedia;
 
 import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.InputStream;
+
+import android.database.CharArrayBuffer;
 
 public class Utils {
     public static final int compareByteArrays(byte[] a, byte[] b) {
@@ -34,4 +39,12 @@ public class Utils {
         return out.toByteArray();
     }
 
+    public static String readInputStream(InputStream s) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[1024];
+        for (int i = 0; (i = s.read(buf)) != -1; ) {
+            out.write(buf,  0, i);
+        }
+        return out.toString();
+    }
 }

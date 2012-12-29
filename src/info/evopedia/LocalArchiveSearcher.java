@@ -2,27 +2,71 @@ package info.evopedia;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
-public class LocalArchiveSearcher extends AsyncTask<File, Long, Map<ArchiveID, LocalArchive>> {
+public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID, LocalArchive>> implements OnCancelListener {
+    private Context context;
 	private ArchiveManager manager;
+	private ProgressDialog dialog;
 
 	public LocalArchiveSearcher(Context context) {
-		this.manager = ArchiveManager.getInstance(context);
+	    this.context = context;
+		manager = ArchiveManager.getInstance(context);
+		dialog = new ProgressDialog(context);
+		dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		dialog.setCancelable(true);
+		dialog.setOnCancelListener(this);
+		dialog.setTitle("Searching for archives...");
 	}
+
+	@Override
+    protected void onPreExecute() {
+        dialog.show();
+    }
 
 	@Override
 	protected Map<ArchiveID, LocalArchive> doInBackground(File... dirs) {
 		HashMap<ArchiveID, LocalArchive> archivesFound = new HashMap<ArchiveID, LocalArchive>();
 
-		for (File dir: dirs)
+		ArrayList<File> firstLevel = new ArrayList<File>();
+		for (File dir : dirs) {
+		    firstLevel.addAll(getSubdirectories(dir));
+		}
+		int progress = 0;
+		int total = firstLevel.size();
+		for (File dir : firstLevel) {
 			searchRecursively(dir, archivesFound);
+			this.publishProgress(progress * 10000 / total);
+			progress ++;
+		}
 
 		return archivesFound;
+	}
+
+	private List<File> getSubdirectories(File directory) {
+        File[] subdirectories = directory.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                return dir.isDirectory();
+            }
+        });
+
+        if (subdirectories == null) {
+            return new ArrayList<File>(0);
+        } else {
+            return Arrays.asList(subdirectories);
+        }
 	}
 
 	private void searchRecursively(File dir, HashMap<ArchiveID, LocalArchive> archivesFound) {
@@ -39,23 +83,27 @@ public class LocalArchiveSearcher extends AsyncTask<File, Long, Map<ArchiveID, L
 			}
 		}
 
-		File[] subdirectories = dir.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String filename) {
-				return dir.isDirectory();
-			}
-		});
-
-		if (subdirectories == null)
-			return;
-
-		for (File subdir : subdirectories) {
+		for (File subdir : getSubdirectories(dir)) {
 			searchRecursively(subdir, archivesFound);
 		}
 	}
 
 	@Override
-	protected void onPostExecute(Map<ArchiveID, LocalArchive> archives) {
-		manager.setLocalArchives(archives);
+	protected void onProgressUpdate(Integer... progress) {
+	    dialog.setProgress(progress[0]);
 	}
+
+	@Override
+	protected void onPostExecute(Map<ArchiveID, LocalArchive> archives) {
+        if (dialog.isShowing()) {
+            dialog.dismiss();
+        }
+        Toast.makeText(context, "Found " + archives.size() + " archives.", Toast.LENGTH_SHORT).show();
+        manager.setLocalArchives(archives);
+	}
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        this.cancel(false);
+    }
 }

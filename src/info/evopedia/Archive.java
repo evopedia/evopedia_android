@@ -1,6 +1,6 @@
 package info.evopedia;
 
-public class Archive implements Comparable<Archive>{
+public abstract class Archive implements Comparable<Archive>{
 	protected String language;
 	protected String date;
 	
@@ -15,6 +15,8 @@ public class Archive implements Comparable<Archive>{
 	public ArchiveID getID() {
 		return new ArchiveID(language, date);
 	}
+	public abstract boolean isMoreLocal(Archive other);
+	public abstract String toJSON();
 	@Override
 	public int compareTo(Archive other) {
 		return getID().compareTo(other.getID());
