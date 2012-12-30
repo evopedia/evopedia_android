@@ -21,7 +21,7 @@ public class DownloadableArchive extends Archive {
         return size;
     }
 
-    public static Archive fromDatabase(String language, String date, String data) {
+    public static Archive fromDatabase(String language, String date, String data, StringNormalizer normalizer) {
         URL url;
         String size;
         try {

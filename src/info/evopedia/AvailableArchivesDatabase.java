@@ -35,12 +35,12 @@ public class AvailableArchivesDatabase {
         dbOpenHelper = new DBOpenHelper(context);
     }
 
-    public Map<ArchiveID, Archive> getArchives() {
+    public Map<ArchiveID, Archive> getArchives(ArchiveManager archiveManager) {
         SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
         Cursor c = db.query("archives", null, null, null, null, null, null);
 
         HashMap<ArchiveID, Archive> archives = new HashMap<ArchiveID, Archive>();
-        for (; !c.isAfterLast(); c.moveToNext()) {
+        while (c.moveToNext()) {
             String lang = c.getString(0);
             String date = c.getString(1);
             int type = c.getInt(2);
@@ -49,13 +49,13 @@ public class AvailableArchivesDatabase {
             Archive a;
             switch (type) {
                 case 0:
-                    a = LocalArchive.fromDatabase(lang, date, data);
+                    a = LocalArchive.fromDatabase(lang, date, data, archiveManager.getDefaultNormalizer());
                     break;
                 case 1:
-                    a = PartialArchive.fromDatabase(lang, date, data);
+                    a = PartialArchive.fromDatabase(lang, date, data, archiveManager.getDefaultNormalizer());
                     break;
                 default:
-                    a = DownloadableArchive.fromDatabase(lang, date, data);
+                    a = DownloadableArchive.fromDatabase(lang, date, data, archiveManager.getDefaultNormalizer());
                     break;
             }
             archives.put(a.getID(), a);
@@ -66,18 +66,20 @@ public class AvailableArchivesDatabase {
     public void putArchive(Archive archive) {
         SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
         db.beginTransaction();
+        try {
+            db.delete("archives", "lang = ? AND date = ?", new String[]{archive.getLanguage(), archive.getDate()});
 
-        db.delete("archives", "lang = ? AND date = ?", new String[]{archive.getLanguage(), archive.getDate()});
+            ContentValues values = new ContentValues();
+            values.put("lang", archive.getLanguage());
+            values.put("date", archive.getDate());
+            values.put("type", (archive instanceof PartialArchive) ? 1 : (archive instanceof LocalArchive ? 0 : 2));
+            values.put("data", archive.toJSON());
+            db.insert("archives", null, values);
 
-
-        ContentValues values = new ContentValues();
-        values.put("lang", archive.getLanguage());
-        values.put("date", archive.getDate());
-        values.put("type", (archive instanceof PartialArchive) ? 1 : (archive instanceof LocalArchive ? 0 : 2));
-        values.put("data", archive.toJSON());
-        db.insert("archives", null, values);
-
-        db.endTransaction();
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public void removeArchive(Archive archive) {

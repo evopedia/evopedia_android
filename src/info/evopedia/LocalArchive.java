@@ -64,7 +64,7 @@ public class LocalArchive extends Archive {
         readable = true;
     }
 
-    public static Archive fromDatabase(String language, String date, String data) {
+    public static Archive fromDatabase(String language, String date, String data, StringNormalizer normalizer) {
         String dir;
         try {
             JSONObject o = new JSONObject(data);
@@ -74,7 +74,7 @@ public class LocalArchive extends Archive {
         }
         /* TODO try to get the normalizer from somewhere else.
          * best would be to store it in the archive */
-        return new LocalArchive(dir, ArchiveManager.getInstance(null).getDefaultNormalizer());
+        return new LocalArchive(dir, normalizer);
     }
 
     public String toJSON() {

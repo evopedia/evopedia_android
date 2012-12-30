@@ -31,7 +31,7 @@ public class ArchiveManager {
 	}
 	private List<OnArchiveChangeListener> onArchiveChangeListeners = new CopyOnWriteArrayList<OnArchiveChangeListener>();
 
-	private static ArchiveManager instance;
+	private static ArchiveManager instance = null;
 
 	private ArchiveManager(Context context) {
 		this.context = context;
@@ -41,7 +41,7 @@ public class ArchiveManager {
 		availableArchivesDatabase = new AvailableArchivesDatabase(context);
 		archives = new HashMap<ArchiveID, Archive>();
         defaultLocalArchives = new HashMap<String, LocalArchive>();
-        archives = availableArchivesDatabase.getArchives();
+        archives = availableArchivesDatabase.getArchives(this);
 
         updateDefaultLocalArchives();
 		fireOnArchiveChange(true);
