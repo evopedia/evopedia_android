@@ -12,6 +12,9 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+/* TODO use uniform interface for global and local search
+ * this is not possible exactly (endless list) but we can share some parts */
+
 public class SearchSuggestionProvider extends ContentProvider {
     String TAG = "SearchSuggestionProvider";
 
@@ -56,9 +59,20 @@ public class SearchSuggestionProvider extends ContentProvider {
         for (int i = 0; i < maxColumns && titleIterator.hasNext(); i ++) {/* TODO sometimes the uri provides a limit option */
             Object[] row = new Object[columnNames.length];
             Title t = titleIterator.next();
+            String remark = "Wikipedia " + t.getArchive().getLanguage(); /* TODO date? */
+            long articleLength = 0;
+            if (t.isRedirect()) {
+                Title orig = t.resolveRedirect();
+                if (orig != null)
+                    articleLength = orig.getArticleLength();
+            } else {
+                articleLength = t.getArticleLength();
+            }
+            remark += String.format(", %.1f kB", (double) articleLength / 1000.0);
+
             row[0] = i;
             row[1] = t.getReadableName();
-            row[2] = "Wikipedia " + t.getArchive().getLanguage();
+            row[2] = remark;
             row[3] = t.toUri();
             cursor.addRow(row);
         }
