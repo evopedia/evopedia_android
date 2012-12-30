@@ -8,11 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.widget.Toast;
 
 public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID, LocalArchive>> implements OnCancelListener {
@@ -20,12 +22,17 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
 	private ArchiveManager manager;
 	private ProgressDialog dialog;
 
-	public LocalArchiveSearcher(Context context) {
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public LocalArchiveSearcher(Context context) {
 	    this.context = context;
 		manager = ArchiveManager.getInstance(context);
 		dialog = new ProgressDialog(context);
 		dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		dialog.setCancelable(true);
+		dialog.setMax(100);
+		if (android.os.Build.VERSION.SDK_INT >= 11) {
+		    dialog.setProgressNumberFormat(null);
+		}
 		dialog.setOnCancelListener(this);
 		dialog.setTitle("Searching for archives...");
 	}
@@ -47,7 +54,7 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
 		int total = firstLevel.size();
 		for (File dir : firstLevel) {
 			searchRecursively(dir, archivesFound);
-			this.publishProgress(progress * 10000 / total);
+			this.publishProgress(progress * 100 / total);
 			progress ++;
 		}
 
