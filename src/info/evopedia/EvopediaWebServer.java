@@ -143,9 +143,18 @@ public class EvopediaWebServer implements Runnable {
                     return;
                 }
 
-                String articleName = pathSegments.get(pathSegments.size() - 1);
-                String language = pathSegments.size() >= 3 ? pathSegments.get(1) : null;
+                String articleName;
+                String language;
 
+                if (uri.getEncodedPath().endsWith("/")) {
+                    articleName = "";
+                    language = pathSegments.size() >= 2 ? pathSegments.get(1) : null;
+                } else {
+                    articleName = pathSegments.get(pathSegments.size() - 1);
+                    language = pathSegments.size() >= 3 ? pathSegments.get(1) : null;
+                }
+
+                /* TODO this does not work if language is null! */
                 LocalArchive archive = manager.getDefaultLocalArchive(language);
 
                 if (archive == null) {
