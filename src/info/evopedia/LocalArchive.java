@@ -245,6 +245,19 @@ public class LocalArchive extends Archive {
         }
     }
 
+    public Title resolveRedirect(Title title) {
+        if (title == null || !title.isRedirect())
+            return title;
+
+        long offset = title.getRedirectOffset();
+        if (offset == 0xffffffL) {
+            /* invalid redirect */
+            return null;
+        } else {
+            return getTitleAtOffset(offset);
+        }
+    }
+
     public String getDirectory() {
         return directory;
     }
@@ -254,18 +267,7 @@ public class LocalArchive extends Archive {
     }
 
     public byte[] getArticle(Title title) {
-        if (title == null)
-            return null;
-
-        if (title.isRedirect()) {
-            long offset = title.getRedirectOffset();
-            if (offset == 0xffffffL) {
-                /* invalid redirect */
-                return null;
-            } else {
-                title = getTitleAtOffset(offset);
-            }
-        }
+        title = resolveRedirect(title);
 
         if (title == null)
             return null;

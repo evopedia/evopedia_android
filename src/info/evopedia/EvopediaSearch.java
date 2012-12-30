@@ -68,7 +68,7 @@ public class EvopediaSearch extends Activity implements OnScrollListener, OnItem
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
-		if (firstVisibleItem + visibleItemCount >= totalItemCount - 4) {
+		if (firstVisibleItem + visibleItemCount >= totalItemCount - 10) {
 			titleAdapter.loadMore();
 		}
 		

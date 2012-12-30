@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiveChangeListener {
@@ -63,16 +64,32 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-        TextView v;
+        LinearLayout v;
         if (convertView != null) {
-        	v = (TextView) convertView;
+        	v = (LinearLayout) convertView;
         } else {
-            LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater vi = (LayoutInflater) context.getSystemService(
+                                    Context.LAYOUT_INFLATER_SERVICE);
             View view = vi.inflate(R.layout.titlelistitem, null);
-            v = (TextView) view;
+            v = (LinearLayout) view;
         }
+
+        /* TODO performance: when the list of titles is extended,
+         * these views are built completely anew? */
         Title t = currentTitles.get(position);
-		v.setText(t.getReadableName() + " (" + t.getArchive().getLanguage() + ")");
+        String remark = "Wikipedia " + t.getArchive().getLanguage(); /* TODO date? */
+        long articleLength = 0;
+        if (t.isRedirect()) {
+            Title orig = t.resolveRedirect();
+            if (orig != null)
+                articleLength = orig.getArticleLength();
+        } else {
+            articleLength = t.getArticleLength();
+        }
+        remark += String.format(", %.1f kB", (double) articleLength / 1000.0);
+        ((TextView) v.findViewById(R.id.titleListItemFirstLine)).setText(
+                t.getReadableName());
+        ((TextView) v.findViewById(R.id.titleListItemSecondLine)).setText(remark);
 		return v;
 	}
 

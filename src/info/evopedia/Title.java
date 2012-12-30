@@ -105,6 +105,10 @@ public class Title implements Comparable<Title> {
 		return blockStart;
 	}
 
+	public Title resolveRedirect() {
+	    return getArchive().resolveRedirect(this);
+	}
+
 	/* TODO I think these should be moved somewhere else */
 	public Uri toUri() {
 		if (name == null) return null;
