@@ -4,7 +4,11 @@
         android:id="@+id/menu_settings"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/menu_settings"/>
-    <item android:id="@+id/scan_for_archives" android:titleCondensed="scan" android:title="scan for archives"></item>
+        android:title="@string/menu_settings"
+        android:icon="@android:drawable/ic_menu_preferences"/>
+    <item android:id="@+id/scan_for_archives"
+        android:titleCondensed="@string/menu_scan_short"
+        android:title="@string/menu_scan"
+        android:showAsAction="ifRoom"/>
 
 </menu>

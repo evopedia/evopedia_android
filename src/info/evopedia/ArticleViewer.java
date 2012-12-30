@@ -3,6 +3,7 @@ package info.evopedia;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
@@ -48,6 +49,12 @@ public class ArticleViewer extends Activity {
             webView.loadUrl(evopedia.getArticleUri(t).toString());
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_article_viewer, menu);
+        return true;
     }
 
 }
