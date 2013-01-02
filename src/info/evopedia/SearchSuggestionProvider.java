@@ -4,9 +4,7 @@ import java.util.ArrayList;
 
 import android.app.SearchManager;
 import android.content.ContentProvider;
-import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;

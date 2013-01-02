@@ -1,6 +1,5 @@
 package info.evopedia;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PartialArchive extends Archive {
