@@ -5,6 +5,10 @@
         android:title="@string/menu_search"
         android:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_search"/>
+    <item android:id="@+id/scan_for_archives"
+        android:titleCondensed="@string/menu_scan_short"
+        android:title="@string/menu_scan"
+        android:showAsAction="ifRoom"/>
     <item
         android:id="@+id/menu_settings"
         android:orderInCategory="100"

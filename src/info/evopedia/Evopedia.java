@@ -26,8 +26,14 @@ public class Evopedia extends Application {
         return webServer;
     }
 
+    public Uri getServerUri() {
+        /* TODO is this really they way to construct URIs? */
+        return Uri.parse(String.format(Locale.US,
+                            "http://127.0.0.1:%d", webServer.getPort()));
+    }
+
     public Uri getArticleUri(Title title) {
-        /* TODO is this really they way to do it? */
+        /* TODO is this really they way to construct URIs? */
         String uri = String.format(Locale.US, "http://127.0.0.1:%d/wiki/%s/%s",
                 webServer.getPort(),
                 Uri.encode(title.getArchive().getLanguage()),

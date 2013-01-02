@@ -81,7 +81,7 @@ public class EvopediaWebServer implements Runnable {
             @Override
             public void handleRequest(Socket client, Uri uri,
                     List<String> pathSegments) throws IOException {
-                /* TODO */
+                outputResponse(client, getAssetFile("static/index.html")    );
             }
         });
 
@@ -230,7 +230,7 @@ public class EvopediaWebServer implements Runnable {
 
             List<String> pathSegments = uri.getPathSegments();
 
-            RequestHandler handler = pathMappings.get(pathSegments.get(0));
+            RequestHandler handler = pathMappings.get(pathSegments.size() > 0 ? pathSegments.get(0) : "");
             if (handler == null) {
                 outputHttpHeader(client, "404");
             } else {

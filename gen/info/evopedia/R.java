@@ -965,9 +965,9 @@ containing a value of this type.
         public static final int edit_query=0x7f060027;
         public static final int homeAsUp=0x7f060006;
         public static final int listMode=0x7f060002;
-        public static final int menu_settings=0x7f06003a;
+        public static final int menu_settings=0x7f06003b;
         public static final int normal=0x7f060001;
-        public static final int scan_for_archives=0x7f06003b;
+        public static final int scan_for_archives=0x7f06003a;
         public static final int search=0x7f060039;
         public static final int showCustom=0x7f060008;
         public static final int showHome=0x7f060005;
@@ -1017,7 +1017,6 @@ containing a value of this type.
     }
     public static final class menu {
         public static final int activity_article_viewer=0x7f0d0000;
-        public static final int activity_evopedia_search=0x7f0d0001;
     }
     public static final class raw {
         public static final int transtbl=0x7f050000;

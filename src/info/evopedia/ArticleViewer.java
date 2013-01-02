@@ -26,9 +26,12 @@ public class ArticleViewer extends SherlockFragmentActivity {
 
         Intent intent = getIntent();
         if (intent.getAction().equals(Intent.ACTION_MAIN)) {
-            onSearchRequested();
-            /* TODO show search dialog or tell user how to download
-             * archives */
+            ArchiveManager manager = ArchiveManager.getInstance(this);
+            if (manager.getDefaultLocalArchives().isEmpty()) {
+                showInitialPage();
+            } else {
+                onSearchRequested();
+            }
         } else if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
             /* TODO */
         } else if (intent.getAction().equals(Intent.ACTION_VIEW)) {
@@ -84,6 +87,11 @@ public class ArticleViewer extends SherlockFragmentActivity {
         }
     }
 
+    private void showInitialPage() {
+        Evopedia evopedia = (Evopedia) getApplication();
+        webView.loadUrl(evopedia.getServerUri().toString());
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -97,7 +105,6 @@ public class ArticleViewer extends SherlockFragmentActivity {
                     LocalArchiveSearcher searcher = new LocalArchiveSearcher(this);
                     searcher.execute(Environment.getExternalStorageDirectory());
                 } else {
-                    /* TODO test that */
                     Toast.makeText(this, "External storage not mounted.", Toast.LENGTH_SHORT).show();
                 }
                 return true;
