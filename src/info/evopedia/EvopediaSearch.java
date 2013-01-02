@@ -1,68 +1,58 @@
 package info.evopedia;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager.LayoutParams;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
-public class EvopediaSearch extends Activity implements OnScrollListener, OnItemClickListener, TextWatcher {
+import com.actionbarsherlock.app.SherlockDialogFragment;
+
+public class EvopediaSearch extends SherlockDialogFragment
+                implements OnScrollListener, OnItemClickListener, TextWatcher {
 	private TitleAdapter titleAdapter;
 	private ListView titleListView;
 
+	@Override
+	public void onAttach(Activity activity) {
+	    super.onAttach(activity);
+
+        titleAdapter = new TitleAdapter(activity);
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstance) {
+	    super.onCreate(savedInstance);
+	    /* TODO setStyle(DialogFragment.STYLE_NO_TITLE, )*/
+	}
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                  Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_evopedia_search,
+                                     container, false);
 
-        titleAdapter = new TitleAdapter(this);
-
-        setContentView(R.layout.activity_evopedia_search);
-
-        titleListView = (ListView) findViewById(R.id.titleListView);
+        titleListView = (ListView) view.findViewById(R.id.titleListView);
         titleListView.setAdapter(titleAdapter);
         titleListView.setOnScrollListener(this);
         titleListView.setOnItemClickListener(this);
 
-        EditText titleSearch = (EditText) findViewById(R.id.titleSearch);
+        EditText titleSearch = (EditText) view.findViewById(R.id.titleSearch);
         titleSearch.addTextChangedListener(this);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_evopedia_search, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-    	switch (item.getItemId()) {
-    		case R.id.scan_for_archives:
-    		    String storageState = Environment.getExternalStorageState();
-    		    if (Environment.MEDIA_MOUNTED.equals(storageState) ||
-    		    		Environment.MEDIA_MOUNTED_READ_ONLY.equals(storageState)) {
-    		    	LocalArchiveSearcher searcher = new LocalArchiveSearcher(this);
-    		    	searcher.execute(Environment.getExternalStorageDirectory());
-    		    } else {
-    		        /* TODO test that */
-    		        Toast.makeText(this, "External storage not mounted.", Toast.LENGTH_SHORT).show();
-    		    }
-    		case R.id.menu_settings:
-    		default:
-    			return super.onOptionsItemSelected(item);
-    	}
+        getDialog().getWindow().setSoftInputMode(
+                LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        titleSearch.requestFocus();
+        return view;
     }
 
 	@Override
@@ -71,7 +61,6 @@ public class EvopediaSearch extends Activity implements OnScrollListener, OnItem
 		if (firstVisibleItem + visibleItemCount >= totalItemCount - 10) {
 			titleAdapter.loadMore();
 		}
-		
 	}
 
 	@Override
@@ -98,5 +87,7 @@ public class EvopediaSearch extends Activity implements OnScrollListener, OnItem
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 	    Intent intent = new Intent(Intent.ACTION_VIEW, titleAdapter.getItem(position).toUri());
 	    startActivity(intent);
+	    dismiss();
+	    /* TODO this activity is perhaps already running */
 	}
 }
