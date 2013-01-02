@@ -33,7 +33,9 @@ public class EvopediaSearch extends SherlockDialogFragment
 	@Override
 	public void onCreate(Bundle savedInstance) {
 	    super.onCreate(savedInstance);
-	    /* TODO setStyle(DialogFragment.STYLE_NO_TITLE, )*/
+	    /* TODO this is still not really the style we want
+	     * - it hides the actionbar */
+	    setStyle(SherlockDialogFragment.STYLE_NO_FRAME, android.R.style.Theme);
 	}
 
     @Override
