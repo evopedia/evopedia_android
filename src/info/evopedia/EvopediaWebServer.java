@@ -48,10 +48,11 @@ public class EvopediaWebServer implements Runnable {
 
     public void bindSocket() {
         try {
-//            socket = new ServerSocket(0, 0,
-//                    InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }));
             socket = new ServerSocket(0, 0,
-                    InetAddress.getByAddress(new byte[] { 0, 0, 0, 0 }));
+                    InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }));
+// TODO make this a setting
+//            socket = new ServerSocket(0, 0,
+//                    InetAddress.getByAddress(new byte[] { 0, 0, 0, 0 }));
         } catch (UnknownHostException e) {
             socket = null;
         } catch (IOException e) {
