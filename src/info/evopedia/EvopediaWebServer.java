@@ -162,7 +162,8 @@ public class EvopediaWebServer implements Runnable {
                     return;
                 }
 
-                byte[] article = archive.getArticle(archive.getTitle(articleName));
+                Title t = archive.getTitle(articleName).resolveRedirect();
+                byte[] article = archive.getArticle(t);
                 if (article == null) {
                     /* TODO could be the url of an image or data file, redirect to online
                      * wikipedia in this case */
@@ -172,7 +173,7 @@ public class EvopediaWebServer implements Runnable {
                 /* TODO header stuff */
                 /* TODO we have too much copying going on here and in outputResponse */
                 ByteArrayOutputStream data = new ByteArrayOutputStream(article.length);
-                data.write(getHTMLHeader());
+                data.write(getHTMLHeader(t.getReadableName()));
                 /* TODO some links */
                 data.write("</div>".getBytes());
                 /* TODO rtl */
@@ -283,9 +284,9 @@ public class EvopediaWebServer implements Runnable {
         outputResponse(client, response, "text/html; charset=\"utf-8\"");
     }
 
-    private byte[] getHTMLHeader() throws IOException {
+    private byte[] getHTMLHeader(String title) throws IOException {
         String header = new String(getAssetFile("header.html"));
-        header = header.replace("OPENSEARCHHEADERS", ""); /* TODO */
+        header = header.replace("TITLE", title); /* TODO escaping */
         return header.getBytes();
     }
 

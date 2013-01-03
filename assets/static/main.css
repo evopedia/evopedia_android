@@ -94,7 +94,7 @@ body {
 
 /* scale back up to a sane default */
 #globalWrapper {
-	font-size: 127%;
+	font-size: 100%;
 	width: 100%;
 	margin: 0;
 	padding: 0;
