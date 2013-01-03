@@ -1,6 +1,10 @@
 package info.evopedia;
 
+import android.app.AlertDialog;
+import android.app.SearchManager;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.webkit.WebChromeClient;
@@ -33,12 +37,15 @@ public class ArticleViewer extends SherlockFragmentActivity {
                 onSearchRequested();
             }
         } else if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
-            /* TODO */
+            onSearchRequested(intent.getStringExtra(SearchManager.QUERY));
         } else if (intent.getAction().equals(Intent.ACTION_VIEW)) {
             Title t = Title.fromUri(getIntent().getData());
             loadArticle(t);
         }
+
+        checkFeedbackReminder();
     }
+
     private void setupWebView() {
         webView = (WebView) findViewById(R.id.webView);
 
@@ -73,8 +80,13 @@ public class ArticleViewer extends SherlockFragmentActivity {
 
     @Override
     public boolean onSearchRequested() {
+        return onSearchRequested("");
+    }
+
+    public boolean onSearchRequested(String query) {
         EvopediaSearch search = new EvopediaSearch();
         search.show(getSupportFragmentManager(), "EvopediaSearch");
+        search.setSearchPrefix(query);
         return true;
     }
 
@@ -90,6 +102,60 @@ public class ArticleViewer extends SherlockFragmentActivity {
     private void showInitialPage() {
         Evopedia evopedia = (Evopedia) getApplication();
         webView.loadUrl(evopedia.getServerUri().toString());
+    }
+
+    private void checkFeedbackReminder() {
+        Evopedia evopedia = (Evopedia) getApplication();
+        if (evopedia.getNumApplicationRuns() < 10 || evopedia.wasFeedbackReminderShown())
+            return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("You have started evopedia at least ten times now.\n" +
+                           "We hope you enjoy it!\n" +
+                           "It would be great if you could give us some feedback " +
+                           "about your experience with the software.\n" +
+                           "(You can do so at any later time via the menu.)");
+        builder.setTitle("Send Feedback");
+        builder.setPositiveButton("Send Feedback", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                sendFeedback();
+            }
+        });
+        builder.setNegativeButton("Maybe Later", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        evopedia.setFeedbackReminderShown();
+    }
+
+    private void sendFeedback() {
+        Intent i = new Intent(Intent.ACTION_SENDTO);
+        i.setData(Uri.parse("mailto:devs@evopedia.info"));
+        i.putExtra(Intent.EXTRA_SUBJECT, "Evopedia Betatesting Feedback");
+        i.putExtra(Intent.EXTRA_TEXT,
+                "Dear developers,\n" +
+                "I tested evopedia and have the following remarks:\n" +
+                "\n" +
+                "I was able to download an archive:\n" +
+                "(if not, what were the problems?)\n" +
+                "\n" +
+                "I found the following bugs:\n" +
+                "(please provide detailed information)\n" +
+                "\n" +
+                "The following improvements would be great:\n" +
+                "\n" +
+                "I found the \"global search\" feature and have the following remarks:\n" +
+                "\n" +
+                "General ideas/remarks:\n" +
+                "\n" +
+                "I used the following devices for testing:\n" +
+                "\n" +
+                "I learned about evopedia as follows:\n" +
+                "\n" +
+                "General rating (1-5):\n" +
+                "\n");
+        startActivity(i);
     }
 
     @Override
@@ -108,7 +174,10 @@ public class ArticleViewer extends SherlockFragmentActivity {
                     Toast.makeText(this, "External storage not mounted.", Toast.LENGTH_SHORT).show();
                 }
                 return true;
-            case R.id.menu_settings:
+            //case R.id.menu_settings:
+            case R.id.menu_send_feedback:
+                sendFeedback();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

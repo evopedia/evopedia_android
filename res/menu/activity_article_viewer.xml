@@ -3,16 +3,20 @@
         android:id="@+id/search"
         android:titleCondensed="@string/menu_search_short"
         android:title="@string/menu_search"
-        android:showAsAction="ifRoom"
+        android:showAsAction="ifRoom|withText"
         android:icon="@android:drawable/ic_menu_search"/>
     <item android:id="@+id/scan_for_archives"
         android:titleCondensed="@string/menu_scan_short"
         android:title="@string/menu_scan"
-        android:showAsAction="ifRoom"/>
-    <item
+        android:showAsAction="never"/>
+<!--    <item
         android:id="@+id/menu_settings"
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/menu_settings"
-        android:icon="@android:drawable/ic_menu_preferences"/>
+        android:icon="@android:drawable/ic_menu_preferences"/> -->
+    <item android:id="@+id/menu_send_feedback"
+        android:titleCondensed="@string/menu_send_feedback_short"
+        android:title="@string/menu_send_feedback"
+        android:showAsAction="never"/>
 </menu>

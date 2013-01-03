@@ -9,6 +9,7 @@
         android:id="@+id/titleSearch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/searchdialog_text_hint"
         android:inputType="text"
         android:ems="10" />
 

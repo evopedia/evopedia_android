@@ -965,7 +965,7 @@ containing a value of this type.
         public static final int edit_query=0x7f060027;
         public static final int homeAsUp=0x7f060006;
         public static final int listMode=0x7f060002;
-        public static final int menu_settings=0x7f06003b;
+        public static final int menu_send_feedback=0x7f06003b;
         public static final int normal=0x7f060001;
         public static final int scan_for_archives=0x7f06003a;
         public static final int search=0x7f060039;
@@ -1068,13 +1068,16 @@ containing a value of this type.
          */
         public static final int abs__shareactionprovider_share_with_application=0x7f0b0009;
         public static final int app_name=0x7f0b000f;
-        public static final int menu_scan=0x7f0b0012;
-        public static final int menu_scan_short=0x7f0b0013;
-        public static final int menu_search=0x7f0b0014;
-        public static final int menu_search_short=0x7f0b0015;
-        public static final int menu_settings=0x7f0b0011;
+        public static final int menu_scan=0x7f0b0013;
+        public static final int menu_scan_short=0x7f0b0014;
+        public static final int menu_search=0x7f0b0015;
+        public static final int menu_search_short=0x7f0b0016;
+        public static final int menu_send_feedback=0x7f0b0017;
+        public static final int menu_send_feedback_short=0x7f0b0018;
+        public static final int menu_settings=0x7f0b0012;
         public static final int search_hint=0x7f0b0010;
-        public static final int title_activity_article_viewer=0x7f0b0016;
+        public static final int searchdialog_text_hint=0x7f0b0011;
+        public static final int title_activity_article_viewer=0x7f0b0019;
     }
     public static final class style {
         /** 
