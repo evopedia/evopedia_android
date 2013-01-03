@@ -5,7 +5,7 @@
     android:versionName="2.0" >
 
     <uses-sdk
-        android:minSdkVersion="10"
+        android:minSdkVersion="1"
         android:targetSdkVersion="17" />
     <uses-permission android:name="android.permission.INTERNET"/>
 
@@ -36,7 +36,9 @@
             <meta-data android:name="android.app.searchable"
                        android:resource="@xml/searchable" />
         </activity>
+        <!--  TODO is it still needed?
         <service android:name=".EvopediaService" />
+        -->
 
 		<provider android:name=".SearchSuggestionProvider"
             android:authorities="info.evopedia.SearchSuggestionProvider" />
