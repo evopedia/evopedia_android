@@ -1,0 +1,4 @@
+- search bar with popup in ActionBar
+- sometimes, search results are not selectable
+- select archives to search in
+- option to select wikipedia mobile stylesheet
