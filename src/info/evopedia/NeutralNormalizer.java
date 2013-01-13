@@ -2,11 +2,11 @@ package info.evopedia;
 
 public class NeutralNormalizer implements StringNormalizer {
 
-	public NeutralNormalizer() {
-	}
+    public NeutralNormalizer() {
+    }
 
-	@Override
-	public String normalize(String str) {
-		return str;
-	}
+    @Override
+    public String normalize(String str) {
+        return str;
+    }
 }

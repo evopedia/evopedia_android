@@ -12,61 +12,64 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiveChangeListener {
-	private Context context;
-	private ArchiveManager archiveManager;
-	private Iterator<Title> titleIterator;
-	private String currentPrefix = "";
-	private ArrayList<Title> currentTitles;
-	private static final int increments = 20;
+    private Context context;
+    private ArchiveManager archiveManager;
+    private Iterator<Title> titleIterator;
+    private String currentPrefix = "";
+    private ArrayList<Title> currentTitles;
+    private static final int increments = 20;
 
-	public TitleAdapter(Context context) {
-		archiveManager = ArchiveManager.getInstance(context.getApplicationContext());
-		this.context = context;
+    public TitleAdapter(Context context) {
+        archiveManager = ArchiveManager.getInstance(context.getApplicationContext());
+        this.context = context;
 
-		archiveManager.addOnArchiveChangeListener(this);
+        archiveManager.addOnArchiveChangeListener(this);
 
-		setPrefix("");
-	}
+        setPrefix("");
+    }
 
-	public void setPrefix(String prefix) {
-		currentPrefix = prefix;
-		currentTitles = new ArrayList<Title>(increments);
+    public void setPrefix(String prefix) {
+        currentPrefix = prefix;
+        currentTitles = new ArrayList<Title>(increments);
 
-		ArrayList<TitleIterator> iterators = new ArrayList<TitleIterator>();
-		for (LocalArchive archive : archiveManager.getDefaultLocalArchives().values()) {
-			iterators.add(archive.getTitlesWithPrefix(prefix));
-		}
-		titleIterator = new MergingTitleIterator(iterators);
-		loadMore();
-	}
+        ArrayList<TitleIterator> iterators = new ArrayList<TitleIterator>();
+        for (LocalArchive archive : archiveManager.getDefaultLocalArchives().values()) {
+            iterators.add(archive.getTitlesWithPrefix(prefix));
+        }
+        titleIterator = new MergingTitleIterator(iterators);
+        loadMore();
+    }
 
-	public void loadMore() {
-		for (int i = 0; titleIterator.hasNext() && i < increments; i ++) {
-			currentTitles.add(titleIterator.next());
-		}
-		notifyDataSetChanged();
-	}
+    public void loadMore() {
+        if (!titleIterator.hasNext())
+            return;
 
-	@Override
-	public int getCount() {
-		return currentTitles.size();
-	}
+        for (int i = 0; titleIterator.hasNext() && i < increments; i ++) {
+            currentTitles.add(titleIterator.next());
+        }
+        notifyDataSetChanged();
+    }
 
-	@Override
-	public Title getItem(int position) {
-		return currentTitles.get(position);
-	}
+    @Override
+    public int getCount() {
+        return currentTitles.size();
+    }
 
-	@Override
-	public long getItemId(int position) {
-		return position;
-	}
+    @Override
+    public Title getItem(int position) {
+        return currentTitles.get(position);
+    }
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
         LinearLayout v;
         if (convertView != null) {
-        	v = (LinearLayout) convertView;
+            v = (LinearLayout) convertView;
         } else {
             LayoutInflater vi = (LayoutInflater) context.getSystemService(
                                     Context.LAYOUT_INFLATER_SERVICE);
@@ -90,13 +93,13 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
         ((TextView) v.findViewById(R.id.titleListItemFirstLine)).setText(
                 t.getReadableName());
         ((TextView) v.findViewById(R.id.titleListItemSecondLine)).setText(remark);
-		return v;
-	}
+        return v;
+    }
 
-	@Override
-	public void onArchiveChange(boolean localArchivesChanged,
-			ArchiveManager manager) {
-		if (localArchivesChanged)
-			setPrefix(currentPrefix);
-	}
+    @Override
+    public void onArchiveChange(boolean localArchivesChanged,
+            ArchiveManager manager) {
+        if (localArchivesChanged)
+            setPrefix(currentPrefix);
+    }
 }

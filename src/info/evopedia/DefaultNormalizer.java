@@ -10,47 +10,47 @@ import java.util.Locale;
 import android.util.Log;
 
 public class DefaultNormalizer implements StringNormalizer {
-	private HashMap<Character, Character> normalizationMap;
+    private HashMap<Character, Character> normalizationMap;
 
-	public DefaultNormalizer(InputStream translationTable) {
-		initializeNormalizationMap(translationTable);
-	}
+    public DefaultNormalizer(InputStream translationTable) {
+        initializeNormalizationMap(translationTable);
+    }
 
-	private void initializeNormalizationMap(InputStream translationTable) {
-		normalizationMap = new HashMap<Character, Character>();
+    private void initializeNormalizationMap(InputStream translationTable) {
+        normalizationMap = new HashMap<Character, Character>();
 
-		try {
-			DataInputStream s = new DataInputStream(translationTable);
+        try {
+            DataInputStream s = new DataInputStream(translationTable);
 
-			while (true) {
-				/* the table actually contains four-byte unicode characters, but for
-				 * all entries, the first two bytes are zero */
-				s.readChar();
-				char k = s.readChar();
-				s.readChar();
-				char v = s.readChar();
-				normalizationMap.put(k, v);
-			}
-		} catch (EOFException eofexc) {
-		} catch (IOException ioexc) {
-			Log.e("Normalizer", "IO Error building normalization map", ioexc);
-		}
-	}
+            while (true) {
+                /* the table actually contains four-byte unicode characters, but for
+                 * all entries, the first two bytes are zero */
+                s.readChar();
+                char k = s.readChar();
+                s.readChar();
+                char v = s.readChar();
+                normalizationMap.put(k, v);
+            }
+        } catch (EOFException eofexc) {
+        } catch (IOException ioexc) {
+            Log.e("Normalizer", "IO Error building normalization map", ioexc);
+        }
+    }
 
-	@Override
-	public String normalize(String str) {
-		StringBuilder s = new StringBuilder(str.length());
+    @Override
+    public String normalize(String str) {
+        StringBuilder s = new StringBuilder(str.length());
 
-		str = str.toLowerCase(Locale.US);
-		for (int i = 0; i < str.length(); i ++) {
-			char c = str.charAt(i);
-			Character ct = normalizationMap.get(c);
-			if (ct == null) {
-				s.append('_');
-			} else {
-				s.append(ct);
-			}
-		}
-		return s.toString();
-	}
+        str = str.toLowerCase(Locale.US);
+        for (int i = 0; i < str.length(); i ++) {
+            char c = str.charAt(i);
+            Character ct = normalizationMap.get(c);
+            if (ct == null) {
+                s.append('_');
+            } else {
+                s.append(ct);
+            }
+        }
+        return s.toString();
+    }
 }

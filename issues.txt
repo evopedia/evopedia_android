@@ -1,4 +1,5 @@
-- search bar with popup in ActionBar
-- sometimes, search results are not selectable
+- search bar with popup in ActionBar (closed in beta2)
+- sometimes, search results are not selectable (solved in beta2)
 - select archives to search in
 - option to select wikipedia mobile stylesheet
+- separate thread for title search

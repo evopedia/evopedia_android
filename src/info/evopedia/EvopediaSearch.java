@@ -1,18 +1,9 @@
 package info.evopedia;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnFocusChangeListener;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
@@ -21,91 +12,83 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
+public class EvopediaSearch implements OnScrollListener, OnItemClickListener, TextWatcher {
+    public interface OnTitleSelectedListener {
+        public void onTitleSelected(Title title);
+    }
 
-public class EvopediaSearch extends SherlockDialogFragment
-                implements OnScrollListener, OnItemClickListener, TextWatcher {
-	private TitleAdapter titleAdapter;
-    private EditText titleSearch;
-	private ListView titleListView;
+    private TitleAdapter titleAdapter;
+    private EditText editText;
+    private ListView titleListView;
+    private OnTitleSelectedListener onTitleSelectedListener;
 
-	private String nextPrefix;
+    private String nextPrefix;
 
-	@Override
-	public void onAttach(Activity activity) {
-	    super.onAttach(activity);
+    /* TODO move the title search outside of the ui thread */
 
-        titleAdapter = new TitleAdapter(activity);
-	}
+    public EvopediaSearch(Context context, OnTitleSelectedListener onTitleSelectedListener) {
+        this.onTitleSelectedListener = onTitleSelectedListener;
 
-	public void setSearchPrefix(String prefix) {
-	    if (titleSearch == null) {
-	        nextPrefix = prefix;
-	    } else {
-	        titleSearch.setText(prefix);
-	    }
-	}
+        titleAdapter = new TitleAdapter(context);
+    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                  Bundle savedInstanceState) {
-        /* TODO use savedInstanceState */
-        View view = inflater.inflate(R.layout.activity_evopedia_search,
-                                     container, false);
-
-        titleSearch = (EditText) view.findViewById(R.id.titleSearch);
-        titleSearch.addTextChangedListener(this);
-        titleSearch.requestFocus();
-
-        titleListView = (ListView) view.findViewById(R.id.titleListView);
-        titleListView.setAdapter(titleAdapter);
-        titleListView.setOnScrollListener(this);
-        titleListView.setOnItemClickListener(this);
-
+    public void setEditText(EditText editText) {
+        this.editText = editText;
+        editText.addTextChangedListener(this);
         if (nextPrefix != null) {
-            titleSearch.setText(nextPrefix);
+            editText.setText(nextPrefix);
             titleAdapter.setPrefix(nextPrefix);
             nextPrefix = null;
         }
-
-        getDialog().requestWindowFeature(STYLE_NO_TITLE);
-
-        return view;
     }
 
-	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem,
-			int visibleItemCount, int totalItemCount) {
-		if (firstVisibleItem + visibleItemCount >= totalItemCount - 10) {
-			titleAdapter.loadMore();
-		}
-	}
+    public void setTitleListView(ListView titleListView) {
+        this.titleListView = titleListView;
+        titleListView.setAdapter(titleAdapter);
+        titleListView.setOnScrollListener(this);
+        titleListView.setOnItemClickListener(this);
+    }
 
-	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
-	}
+    public void setSearchPrefix(String prefix) {
+        if (editText == null) {
+            nextPrefix = prefix;
+        } else {
+            editText.setText(prefix);
+        }
+    }
 
-	@Override
-	public void afterTextChanged(Editable e) {
-		titleAdapter.setPrefix(e.toString());
-		/* scroll to top */
-		titleListView.setSelectionAfterHeaderView();
-	}
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem,
+            int visibleItemCount, int totalItemCount) {
+        if (firstVisibleItem + visibleItemCount >= totalItemCount - 10) {
+            titleAdapter.loadMore();
+        }
+    }
 
-	@Override
-	public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
-			int arg3) {
-	}
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+    }
 
-	@Override
-	public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-	}
+    @Override
+    public void afterTextChanged(Editable e) {
+        titleAdapter.setPrefix(e.toString());
+        /* scroll to top */
+        titleListView.setSelectionAfterHeaderView();
+    }
 
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-	    Intent intent = new Intent(Intent.ACTION_VIEW, titleAdapter.getItem(position).toUri());
-	    startActivity(intent);
-	    dismiss();
-	    /* TODO this activity is perhaps already running */
-	}
+    @Override
+    public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
+            int arg3) {
+    }
+
+    @Override
+    public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (onTitleSelectedListener != null) {
+            onTitleSelectedListener.onTitleSelected(titleAdapter.getItem(position));
+        }
+    }
 }

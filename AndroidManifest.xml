@@ -5,7 +5,7 @@
     android:versionName="2.0" >
 
     <uses-sdk
-        android:minSdkVersion="1"
+        android:minSdkVersion="10"
         android:targetSdkVersion="17" />
     <uses-permission android:name="android.permission.INTERNET"/>
 
@@ -18,7 +18,7 @@
 
         <activity
             android:theme="@style/Theme.Sherlock"
-            android:name="info.evopedia.ArticleViewer"
+            android:name="info.evopedia.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,7 +44,7 @@
             android:authorities="info.evopedia.SearchSuggestionProvider" />
 
         <meta-data android:name="android.app.default_searchable"
-                   android:value=".ArticleViewer" />
+                   android:value=".MainActivity" />
 
     </application>
 </manifest>

@@ -965,21 +965,22 @@ containing a value of this type.
         public static final int edit_query=0x7f060027;
         public static final int homeAsUp=0x7f060006;
         public static final int listMode=0x7f060002;
-        public static final int menu_send_feedback=0x7f06003b;
+        public static final int menu_search_view=0x7f06003a;
+        public static final int menu_send_feedback=0x7f06003c;
         public static final int normal=0x7f060001;
-        public static final int scan_for_archives=0x7f06003a;
-        public static final int search=0x7f060039;
+        public static final int scan_for_archives=0x7f06003b;
+        public static final int searchEditText=0x7f060036;
+        public static final int search_bar=0x7f060035;
         public static final int showCustom=0x7f060008;
         public static final int showHome=0x7f060005;
         public static final int showTitle=0x7f060007;
         public static final int tabMode=0x7f060003;
-        public static final int titleListItem=0x7f060036;
-        public static final int titleListItemFirstLine=0x7f060037;
-        public static final int titleListItemSecondLine=0x7f060038;
-        public static final int titleListView=0x7f060035;
-        public static final int titleSearch=0x7f060034;
+        public static final int titleListItem=0x7f060037;
+        public static final int titleListItemFirstLine=0x7f060038;
+        public static final int titleListItemSecondLine=0x7f060039;
+        public static final int titleListView=0x7f060033;
         public static final int useLogo=0x7f060004;
-        public static final int webView=0x7f060033;
+        public static final int webView=0x7f060034;
         public static final int wrap_content=0x7f060000;
     }
     public static final class integer {
@@ -1009,14 +1010,14 @@ containing a value of this type.
         public static final int abs__search_dropdown_item_icons_2line=0x7f030014;
         public static final int abs__search_view=0x7f030015;
         public static final int abs__simple_dropdown_hint=0x7f030016;
-        public static final int activity_article_viewer=0x7f030017;
-        public static final int activity_evopedia_search=0x7f030018;
+        public static final int main_activity=0x7f030017;
+        public static final int search_bar=0x7f030018;
         public static final int sherlock_spinner_dropdown_item=0x7f030019;
         public static final int sherlock_spinner_item=0x7f03001a;
         public static final int titlelistitem=0x7f03001b;
     }
     public static final class menu {
-        public static final int activity_article_viewer=0x7f0d0000;
+        public static final int main_activity=0x7f0d0000;
     }
     public static final class raw {
         public static final int transtbl=0x7f050000;
@@ -1068,16 +1069,16 @@ containing a value of this type.
          */
         public static final int abs__shareactionprovider_share_with_application=0x7f0b0009;
         public static final int app_name=0x7f0b000f;
-        public static final int menu_scan=0x7f0b0013;
-        public static final int menu_scan_short=0x7f0b0014;
-        public static final int menu_search=0x7f0b0015;
-        public static final int menu_search_short=0x7f0b0016;
-        public static final int menu_send_feedback=0x7f0b0017;
-        public static final int menu_send_feedback_short=0x7f0b0018;
-        public static final int menu_settings=0x7f0b0012;
+        public static final int menu_scan=0x7f0b0014;
+        public static final int menu_scan_short=0x7f0b0015;
+        public static final int menu_search=0x7f0b0016;
+        public static final int menu_search_hint=0x7f0b0011;
+        public static final int menu_search_short=0x7f0b0017;
+        public static final int menu_send_feedback=0x7f0b0018;
+        public static final int menu_send_feedback_short=0x7f0b0019;
+        public static final int menu_settings=0x7f0b0013;
         public static final int search_hint=0x7f0b0010;
-        public static final int searchdialog_text_hint=0x7f0b0011;
-        public static final int title_activity_article_viewer=0x7f0b0019;
+        public static final int searchdialog_text_hint=0x7f0b0012;
     }
     public static final class style {
         /** 
