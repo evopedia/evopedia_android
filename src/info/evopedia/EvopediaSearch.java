@@ -25,8 +25,6 @@ public class EvopediaSearch implements OnScrollListener, OnItemClickListener, Te
 
     private String nextPrefix;
 
-    /* TODO move the title search outside of the ui thread */
-
     public EvopediaSearch(Activity activity, OnTitleSelectedListener onTitleSelectedListener) {
         this.onTitleSelectedListener = onTitleSelectedListener;
 

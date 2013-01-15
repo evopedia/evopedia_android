@@ -2,23 +2,15 @@ package info.evopedia;
 
 import android.app.AlertDialog;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -33,6 +25,7 @@ public class MainActivity extends SherlockFragmentActivity implements
         OnActionExpandListener, EvopediaSearch.OnTitleSelectedListener {
     private WebView webView;
     private MenuItem searchMenuItem;
+    private boolean expandSearchMenuItem = false;
     private EvopediaSearch evopediaSearch;
 
     @Override
@@ -47,20 +40,7 @@ public class MainActivity extends SherlockFragmentActivity implements
 
         evopediaSearch.setTitleListView((ListView) findViewById(R.id.titleListView));
 
-        Intent intent = getIntent();
-        if (intent.getAction().equals(Intent.ACTION_MAIN)) {
-            ArchiveManager manager = ArchiveManager.getInstance(this);
-            if (manager.getDefaultLocalArchives().isEmpty()) {
-                showInitialPage();
-            } else {
-                // onSearchRequested();
-            }
-        } else if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
-            onSearchRequested(intent.getStringExtra(SearchManager.QUERY));
-        } else if (intent.getAction().equals(Intent.ACTION_VIEW)) {
-            Title t = Title.fromUri(getIntent().getData());
-            loadArticle(t);
-        }
+        onNewIntent(getIntent());
 
         checkFeedbackReminder();
     }
@@ -97,6 +77,10 @@ public class MainActivity extends SherlockFragmentActivity implements
         getSupportMenuInflater().inflate(R.menu.main_activity, menu);
         searchMenuItem = menu.findItem(R.id.menu_search_view);
         searchMenuItem.setOnActionExpandListener(this);
+        if (expandSearchMenuItem) {
+            searchMenuItem.expandActionView();
+            expandSearchMenuItem = false;
+        }
 
         evopediaSearch.setEditText((EditText) searchMenuItem.getActionView()
                                         .findViewById(R.id.searchEditText));
@@ -110,8 +94,11 @@ public class MainActivity extends SherlockFragmentActivity implements
     }
 
     public boolean onSearchRequested(String query) {
-        /* TODO expand action view item */
-        searchMenuItem.expandActionView();
+        if (searchMenuItem == null) {
+            expandSearchMenuItem = true;
+        } else {
+            searchMenuItem.expandActionView();
+        }
         evopediaSearch.setSearchPrefix(query);
         return true;
     }
@@ -122,6 +109,23 @@ public class MainActivity extends SherlockFragmentActivity implements
         } else {
             Evopedia evopedia = (Evopedia) getApplication();
             webView.loadUrl(evopedia.getArticleUri(t).toString());
+        }
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        if (intent.getAction().equals(Intent.ACTION_MAIN)) {
+            ArchiveManager manager = ArchiveManager.getInstance(this);
+            if (manager.getDefaultLocalArchives().isEmpty()) {
+                showInitialPage();
+            } else {
+                onSearchRequested();
+            }
+        } else if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
+            onSearchRequested(intent.getStringExtra(SearchManager.QUERY));
+        } else if (intent.getAction().equals(Intent.ACTION_VIEW)) {
+            Title t = Title.fromUri(intent.getData());
+            loadArticle(t);
         }
     }
 
@@ -224,6 +228,7 @@ public class MainActivity extends SherlockFragmentActivity implements
 
     @Override
     public void onTitleSelected(Title title) {
+        searchMenuItem.collapseActionView();
         Intent intent = new Intent(Intent.ACTION_VIEW, title.toUri());
         startActivity(intent);
     }

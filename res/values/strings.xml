@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">evopedia</string>
+    <string name="app_name">Evopedia</string>
     <string name="search_hint">Search for Wikipedia articles</string>
     <string name="menu_search_hint">Search Titles</string>
     <string name="searchdialog_text_hint">Search titles</string>
