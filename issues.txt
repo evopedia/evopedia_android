@@ -2,4 +2,9 @@
 - sometimes, search results are not selectable (solved in beta2)
 - select archives to search in
 - option to select wikipedia mobile stylesheet
-- separate thread for title search
+- separate thread for title search (closed in beta2)
+- correct usage of back stack
+  - using singleTop in the manifest file, storing own stack of urls and
+    intercepting the back button
+  - this way, we do not start a TitleAdapter thread in each activity
+    and retain the search "dialog" properties for each activity
