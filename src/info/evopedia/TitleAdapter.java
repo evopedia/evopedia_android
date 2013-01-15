@@ -52,7 +52,6 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
     public synchronized void setPrefix(String prefix) {
         this.prefixSeq ++;
         this.prefix = prefix;
-        currentTitles = new ArrayList<Title>(increments);
 
         startOrRestartThread();
     } 
@@ -123,6 +122,7 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
         String prefix = "";
         MergingTitleIterator titleIterator = null;
         while (!terminate) {
+            boolean reload = false;
             synchronized (this) {
                 while (!this.loadMore && this.prefixSeq == prefixSeq) {
                     try {
@@ -136,23 +136,29 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
                     prefix = this.prefix;
                     prefixSeq = this.prefixSeq;
                     titleIterator = null;
+                    reload = true;
                 }
                 this.loadMore = false;
             }
-            if (titleIterator == null)
+            if (reload)
                 titleIterator = createTitleIterator(prefix);
-            sendResult(prefixSeq, loadTitles(titleIterator));
+            sendResult(prefixSeq, reload, loadTitles(titleIterator));
         }
     }
 
-    private void sendResult(final int prefixSeq, final List<Title> titles) {
+    private void sendResult(final int prefixSeq, final boolean reload, final List<Title> titles) {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (TitleAdapter.this.prefixSeq != prefixSeq)
                     return;
-                currentTitles.addAll(titles);
-                notifyDataSetChanged();
+                if (reload) {
+                    currentTitles = new ArrayList<Title>(titles);
+                    notifyDataSetChanged();
+                } else if (titles.size() > 0) {
+                    currentTitles.addAll(titles);
+                    notifyDataSetChanged();
+                }
             }
         });
     }
