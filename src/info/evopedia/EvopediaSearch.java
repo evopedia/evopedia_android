@@ -1,5 +1,6 @@
 package info.evopedia;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -26,10 +27,10 @@ public class EvopediaSearch implements OnScrollListener, OnItemClickListener, Te
 
     /* TODO move the title search outside of the ui thread */
 
-    public EvopediaSearch(Context context, OnTitleSelectedListener onTitleSelectedListener) {
+    public EvopediaSearch(Activity activity, OnTitleSelectedListener onTitleSelectedListener) {
         this.onTitleSelectedListener = onTitleSelectedListener;
 
-        titleAdapter = new TitleAdapter(context);
+        titleAdapter = new TitleAdapter(activity);
     }
 
     public void setEditText(EditText editText) {

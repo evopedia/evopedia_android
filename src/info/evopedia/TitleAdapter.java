@@ -1,9 +1,13 @@
 package info.evopedia;
 
+import java.lang.Thread.State;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,43 +15,52 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiveChangeListener {
-    private Context context;
-    private ArchiveManager archiveManager;
-    private Iterator<Title> titleIterator;
-    private String currentPrefix = "";
+public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiveChangeListener, Runnable {
     private ArrayList<Title> currentTitles;
     private static final int increments = 20;
 
-    public TitleAdapter(Context context) {
-        archiveManager = ArchiveManager.getInstance(context.getApplicationContext());
-        this.context = context;
+    /* accessed by new thread */
+    private final Activity activity;
+    private ArchiveManager archiveManager;
 
+    /* thread input */
+    private int prefixSeq = 0;
+    private String prefix = "";
+    private boolean loadMore = false;
+
+    private Thread thread;
+    private boolean terminate = false;
+
+    public TitleAdapter(Activity activity) {
+        this.activity = activity;
+
+        archiveManager = ArchiveManager.getInstance(activity.getApplicationContext());
+        currentTitles = new ArrayList<Title>();
         archiveManager.addOnArchiveChangeListener(this);
 
-        setPrefix("");
+        startOrRestartThread();
     }
 
-    public void setPrefix(String prefix) {
-        currentPrefix = prefix;
+    private synchronized void startOrRestartThread() {
+        if (thread == null || thread.getState() == State.TERMINATED) {
+            thread = new Thread(this);
+            thread.start();
+        }
+        notify();
+    }
+
+    public synchronized void setPrefix(String prefix) {
+        this.prefixSeq ++;
+        this.prefix = prefix;
         currentTitles = new ArrayList<Title>(increments);
 
-        ArrayList<TitleIterator> iterators = new ArrayList<TitleIterator>();
-        for (LocalArchive archive : archiveManager.getDefaultLocalArchives().values()) {
-            iterators.add(archive.getTitlesWithPrefix(prefix));
-        }
-        titleIterator = new MergingTitleIterator(iterators);
-        loadMore();
-    }
+        startOrRestartThread();
+    } 
 
-    public void loadMore() {
-        if (!titleIterator.hasNext())
-            return;
+    public synchronized void loadMore() {
+        loadMore = true;
 
-        for (int i = 0; titleIterator.hasNext() && i < increments; i ++) {
-            currentTitles.add(titleIterator.next());
-        }
-        notifyDataSetChanged();
+        startOrRestartThread();
     }
 
     @Override
@@ -71,7 +84,7 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
         if (convertView != null) {
             v = (LinearLayout) convertView;
         } else {
-            LayoutInflater vi = (LayoutInflater) context.getSystemService(
+            LayoutInflater vi = (LayoutInflater) activity.getSystemService(
                                     Context.LAYOUT_INFLATER_SERVICE);
             View view = vi.inflate(R.layout.titlelistitem, null);
             v = (LinearLayout) view;
@@ -97,9 +110,70 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
     }
 
     @Override
-    public void onArchiveChange(boolean localArchivesChanged,
-            ArchiveManager manager) {
+    public void onArchiveChange(boolean localArchivesChanged, ArchiveManager manager) {
         if (localArchivesChanged)
-            setPrefix(currentPrefix);
+            setPrefix(prefix);
+    }
+
+    /* below this line, everything runs in the new thread */
+
+    @Override
+    public void run() {
+        int prefixSeq = -1;
+        String prefix = "";
+        MergingTitleIterator titleIterator = null;
+        while (!terminate) {
+            synchronized (this) {
+                while (!this.loadMore && this.prefixSeq == prefixSeq) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+
+                if (this.prefixSeq > prefixSeq) {
+                    prefix = this.prefix;
+                    prefixSeq = this.prefixSeq;
+                    titleIterator = null;
+                }
+                this.loadMore = false;
+            }
+            if (titleIterator == null)
+                titleIterator = createTitleIterator(prefix);
+            sendResult(prefixSeq, loadTitles(titleIterator));
+        }
+    }
+
+    private void sendResult(final int prefixSeq, final List<Title> titles) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (TitleAdapter.this.prefixSeq != prefixSeq)
+                    return;
+                currentTitles.addAll(titles);
+                notifyDataSetChanged();
+            }
+        });
+    }
+
+    private MergingTitleIterator createTitleIterator(String prefix) {
+        ArrayList<TitleIterator> iterators = new ArrayList<TitleIterator>();
+        /* TODO archivemanager needs to be thread safe */
+        for (LocalArchive archive : archiveManager.getDefaultLocalArchives().values()) {
+            iterators.add(archive.getTitlesWithPrefix(prefix));
+        }
+        return new MergingTitleIterator(iterators);
+    }
+
+    private List<Title> loadTitles(MergingTitleIterator titleIterator) {
+        ArrayList<Title> newTitles = new ArrayList<Title>();
+        if (!titleIterator.hasNext())
+            return newTitles;
+
+        for (int i = 0; titleIterator.hasNext() && i < increments; i ++) {
+            newTitles.add(titleIterator.next());
+        }
+        return newTitles;
     }
 }
