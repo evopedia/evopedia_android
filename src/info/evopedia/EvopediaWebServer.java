@@ -164,7 +164,14 @@ public class EvopediaWebServer implements Runnable {
                 }
 
                 Title t = archive.getTitle(articleName).resolveRedirect();
-                byte[] article = archive.getArticle(t);
+                byte[] article;
+                try {
+                    article = archive.getArticle(t);
+                } catch (OutOfMemoryError e) {
+                    /* TODO nicer error page, ask browser to release memory? */
+                    outputHttpHeader(client, "500");
+                    return;
+                }
                 if (article == null) {
                     /* TODO could be the url of an image or data file, redirect to online
                      * wikipedia in this case */
