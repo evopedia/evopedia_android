@@ -5,8 +5,12 @@ import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -37,6 +41,8 @@ public class MainActivity extends SherlockFragmentActivity implements
 
         setContentView(R.layout.main_activity);
         setupWebView();
+        if (savedInstanceState != null)
+            webView.restoreState(savedInstanceState);
 
         evopediaSearch.setTitleListView((ListView) findViewById(R.id.titleListView));
 
@@ -103,6 +109,32 @@ public class MainActivity extends SherlockFragmentActivity implements
         return true;
     }
 
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (VERSION.SDK_INT < 5 && keyCode == KeyEvent.KEYCODE_BACK) {
+            onBackPressed();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        /* TODO why is this not done automatically? */
+        webView.saveState(outState);
+        Log.i("mainactivity", outState.toString());
+    }
+
     private void loadArticle(Title t) {
         if (t == null) {
             /* TODO show some not-found page */
@@ -119,7 +151,8 @@ public class MainActivity extends SherlockFragmentActivity implements
             if (manager.getDefaultLocalArchives().isEmpty()) {
                 showInitialPage();
             } else {
-                onSearchRequested();
+                // we rather display the last page (restored from the bundle)
+                //onSearchRequested();
             }
         } else if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
             onSearchRequested(intent.getStringExtra(SearchManager.QUERY));
