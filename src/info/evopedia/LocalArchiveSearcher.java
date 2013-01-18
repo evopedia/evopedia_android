@@ -1,12 +1,21 @@
 package info.evopedia;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
@@ -42,13 +51,57 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
         dialog.show();
     }
 
+    private List<String> findAdditionalStorageLocations(List<String> dirs) {
+        ArrayList<String> mountPoints = new ArrayList<String>(dirs);
+        Pattern p = Pattern.compile("^\\S*vold\\S*\\s+(\\S+)\\s+" +
+                                    "(vfat|ntfs|exfat|fat32|ext3|ext4).*");
+        String mounts = "";
+        try {
+            mounts = Utils.readInputStream(new FileInputStream("/proc/mounts"));
+        } catch (final Exception e) {
+            return dirs;
+        }
+
+        for (String line : mounts.split("\n")) {
+            if (line.toLowerCase(Locale.US).contains("asec"))
+                continue;
+            Matcher m = p.matcher(line);
+            if (!m.matches())
+                continue;
+            String mp = m.group(1);
+            if (!mountPoints.contains(mp))
+                mountPoints.add(m.group(1));
+        }
+
+        ArrayList<String> out = new ArrayList<String>(mountPoints.size());
+        for (int i = 0; i < mountPoints.size(); i ++) {
+            boolean isPrefix = false;
+            String mp = mountPoints.get(i);
+            for (int j = 0; j < mountPoints.size(); j ++) {
+                if (i != j && mp.startsWith(mountPoints.get(j))) {
+                    isPrefix = true;
+                }
+            }
+            if (!isPrefix) {
+                out.add(mp);
+            }
+        }
+        return out;
+    }
+
     @Override
-    protected Map<ArchiveID, LocalArchive> doInBackground(File... dirs) {
+    protected Map<ArchiveID, LocalArchive> doInBackground(File... manualDirectories) {
         HashMap<ArchiveID, LocalArchive> archivesFound = new HashMap<ArchiveID, LocalArchive>();
 
+        ArrayList<String> manualPaths = new ArrayList<String>(manualDirectories.length);
+        for (File f : manualDirectories) {
+            manualPaths.add(f.getPath());
+        }
+        List<String> dirs = findAdditionalStorageLocations(manualPaths);
+
         ArrayList<File> firstLevel = new ArrayList<File>();
-        for (File dir : dirs) {
-            firstLevel.addAll(getSubdirectories(dir));
+        for (String dir : dirs) {
+            firstLevel.addAll(getSubdirectories(new File(dir)));
         }
         int progress = 0;
         int total = firstLevel.size();
@@ -105,7 +158,20 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
         if (dialog.isShowing()) {
             dialog.dismiss();
         }
-        Toast.makeText(context, "Found " + archives.size() + " archives.", Toast.LENGTH_SHORT).show();
+        if (archives.size() == 0) {
+            Toast.makeText(context, "Could not find any archives.", Toast.LENGTH_SHORT).show();
+            /* TODO better to use alert? */
+        } else {
+            String text = "Found " + archives.size() + " archives: ";
+            int i = 0;
+            for (LocalArchive a : archives.values()) {
+                text += a.getLanguage() + " (" + a.getDate() + ")";
+                if (i < archives.size() - 1)
+                    text += ", ";
+                i ++;
+            }
+            Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+        }
         manager.setLocalArchives(archives);
     }
 
