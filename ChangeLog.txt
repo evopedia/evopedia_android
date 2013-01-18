@@ -1,0 +1,24 @@
+
+beta3
+
+  * out of memory errors caught
+  * back stack handling improved
+  * find external SD cards
+
+ -- Evopedia Developers <devs@evopedia.info> 2013-01-18
+
+
+beta2
+
+  * title search in own thread
+  * search and article viewer combined
+  * closes: #001, #002, #003
+
+ -- Evopedia Developers <devs@evopedia.info> 2013-01-15
+
+
+beta1
+
+  * first public release
+
+ -- Evopedia Developers <devs@evopedia.info> 2013-01-03

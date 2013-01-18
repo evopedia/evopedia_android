@@ -1,10 +1,20 @@
-- search bar with popup in ActionBar (closed in beta2)
-- sometimes, search results are not selectable (solved in beta2)
-- select archives to search in
-- option to select wikipedia mobile stylesheet
-- separate thread for title search (closed in beta2)
-- correct usage of back stack
-  - using singleTop in the manifest file, storing own stack of urls and
-    intercepting the back button
-  - this way, we do not start a TitleAdapter thread in each activity
-    and retain the search "dialog" properties for each activity
+CLOSED:
+ - in beta2:
+   001 search bar with popup in ActionBar
+   002 sometimes, search results are not selectable
+   003 separate thread for title search
+ - in beta3:
+   004 correct usage of back stack
+   005 catch out of memory errors in bzip
+TEST:
+   009 are all possible archive locations searched (sd card?)
+OPEN:
+   006 select archives to search in
+   007 option to select wikipedia mobile stylesheet
+   008 searching inside the webview (showFindDialog?)
+   012 links to online wikipedia
+   013 nearby articles
+   014 do memory problems also occur on real devices?
+DUMP PROCESS:
+ 010 there are some html files that are redirects
+ 011 wikivoyage
