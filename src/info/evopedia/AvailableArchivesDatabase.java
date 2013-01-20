@@ -46,10 +46,13 @@ public class AvailableArchivesDatabase {
             int type = c.getInt(2);
             String data = c.getString(3);
 
-            Archive a;
+            Archive a = null;
             switch (type) {
                 case 0:
-                    a = LocalArchive.fromDatabase(lang, date, data, archiveManager.getDefaultNormalizer());
+                    LocalArchive la = (LocalArchive) LocalArchive.fromDatabase(lang, date, data,
+                                                             archiveManager.getDefaultNormalizer());
+                    if (la.isReadable())
+                        a = la;
                     break;
                 case 1:
                     a = PartialArchive.fromDatabase(lang, date, data, archiveManager.getDefaultNormalizer());
@@ -58,7 +61,8 @@ public class AvailableArchivesDatabase {
                     a = DownloadableArchive.fromDatabase(lang, date, data, archiveManager.getDefaultNormalizer());
                     break;
             }
-            archives.put(a.getID(), a);
+            if (a != null)
+                archives.put(a.getID(), a);
         }
         return archives;
     }
