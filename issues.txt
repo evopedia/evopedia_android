@@ -6,8 +6,9 @@ CLOSED:
  - in beta3:
    004 correct usage of back stack
    005 catch out of memory errors in bzip
-TEST:
    009 are all possible archive locations searched (sd card?)
+ - in beta4:
+   015 starting with deleted archives crashes the app
 OPEN:
    006 select archives to search in
    007 option to select wikipedia mobile stylesheet

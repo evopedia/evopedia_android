@@ -73,7 +73,13 @@ public class MainActivity extends SherlockFragmentActivity implements
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                return !url.startsWith("http://127.0.0.1");
+                if (url.startsWith("http://127.0.0.1")) {
+                    return false;
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                    return true;
+                }
             }
         });
     }
@@ -111,11 +117,11 @@ public class MainActivity extends SherlockFragmentActivity implements
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (VERSION.SDK_INT < 5 && keyCode == KeyEvent.KEYCODE_BACK) {
+        if (Integer.valueOf(VERSION.SDK) < 5 && keyCode == KeyEvent.KEYCODE_BACK) {
             onBackPressed();
             return true;
         }
-        return super.onKeyDown(keyCode, event);
+        return super.onKeyUp(keyCode, event);
     }
 
     @Override
