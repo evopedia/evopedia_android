@@ -12,5 +12,8 @@
     <string name="menu_search_short">Search</string>
     <string name="menu_send_feedback">Feedback to developers</string>
     <string name="menu_send_feedback_short">Feedback</string>
-
+    <string name="menu_online_article">Article at wikipedia.org</string>
+    <string name="menu_online_article_short">At wikipedia.org</string>
+    <string name="menu_other_languages">In other languages</string>
+    <string name="menu_other_languages_short">other languages</string>
 </resources>

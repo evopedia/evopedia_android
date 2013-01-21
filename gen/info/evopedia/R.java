@@ -965,10 +965,12 @@ containing a value of this type.
         public static final int edit_query=0x7f060027;
         public static final int homeAsUp=0x7f060006;
         public static final int listMode=0x7f060002;
+        public static final int menu_online_article=0x7f06003b;
+        public static final int menu_other_languages=0x7f06003c;
         public static final int menu_search_view=0x7f06003a;
-        public static final int menu_send_feedback=0x7f06003c;
+        public static final int menu_send_feedback=0x7f06003e;
         public static final int normal=0x7f060001;
-        public static final int scan_for_archives=0x7f06003b;
+        public static final int scan_for_archives=0x7f06003d;
         public static final int searchEditText=0x7f060036;
         public static final int search_bar=0x7f060035;
         public static final int showCustom=0x7f060008;
@@ -1069,6 +1071,10 @@ containing a value of this type.
          */
         public static final int abs__shareactionprovider_share_with_application=0x7f0b0009;
         public static final int app_name=0x7f0b000f;
+        public static final int menu_online_article=0x7f0b001a;
+        public static final int menu_online_article_short=0x7f0b001b;
+        public static final int menu_other_languages=0x7f0b001c;
+        public static final int menu_other_languages_short=0x7f0b001d;
         public static final int menu_scan=0x7f0b0014;
         public static final int menu_scan_short=0x7f0b0015;
         public static final int menu_search=0x7f0b0016;

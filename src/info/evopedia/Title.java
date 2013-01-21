@@ -1,6 +1,7 @@
 package info.evopedia;
 
 import android.net.Uri;
+import android.net.Uri.Builder;
 
 public class Title implements Comparable<Title> {
     private long titleOffset;
@@ -106,6 +107,11 @@ public class Title implements Comparable<Title> {
 
     public Title resolveRedirect() {
         return getArchive().resolveRedirect(this);
+    }
+
+    public Uri getOrigUri() {
+        Builder uriBuilder = Uri.parse(getArchive().getDumpOrigUrl()).buildUpon();
+        return uriBuilder.appendPath(getName()).build();
     }
 
     /* TODO I think these should be moved somewhere else */

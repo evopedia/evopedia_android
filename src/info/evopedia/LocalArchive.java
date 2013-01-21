@@ -262,6 +262,18 @@ public class LocalArchive extends Archive {
         return directory;
     }
 
+    public String getDumpOrigUrl() {
+        return dumpOrigURL;
+    }
+
+    public String getDumpVersion() {
+        return dumpVersion;
+    }
+
+    public String getNumArticles() {
+        return dumpNumArticles;
+    }
+
     public boolean isReadable() {
         return readable;
     }

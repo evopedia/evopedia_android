@@ -8,14 +8,16 @@ CLOSED:
    005 catch out of memory errors in bzip
    009 are all possible archive locations searched (sd card?)
  - in beta4:
+   012 links to online wikipedia
    015 starting with deleted archives crashes the app
+   016 actionbar title should reflect the article name
 OPEN:
    006 select archives to search in
    007 option to select wikipedia mobile stylesheet
    008 searching inside the webview (showFindDialog?)
-   012 links to online wikipedia
    013 nearby articles
    014 do memory problems also occur on real devices?
+   017 speed optimizations: cache static responses, try to save some memory
 DUMP PROCESS:
- 010 there are some html files that are redirects
+ 010 there are some html files that are redirects -> change them while packaging
  011 wikivoyage

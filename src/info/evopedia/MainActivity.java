@@ -1,9 +1,15 @@
 package info.evopedia;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -15,6 +21,7 @@ import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -27,16 +34,22 @@ import com.actionbarsherlock.view.Window;
 
 public class MainActivity extends SherlockFragmentActivity implements
         OnActionExpandListener, EvopediaSearch.OnTitleSelectedListener {
+    private Evopedia evopedia;
     private WebView webView;
     private MenuItem searchMenuItem;
+    private MenuItem onlineArticleMenuItem;
+    private MenuItem otherLanguagesMenuItem;
     private boolean expandSearchMenuItem = false;
     private EvopediaSearch evopediaSearch;
+    private List<InterLanguageLink> currentInterLanguageLinks; 
+    private Title currentTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_PROGRESS);
 
+        evopedia = (Evopedia) getApplication();
         evopediaSearch = new EvopediaSearch(this, this);
 
         setContentView(R.layout.main_activity);
@@ -67,10 +80,14 @@ public class MainActivity extends SherlockFragmentActivity implements
 
             @Override
             public void onReceivedTitle(WebView view, String title) {
-                activity.getWindow().setTitle(title + " - evopedia");
+                getSupportActionBar().setTitle(title + " - Evopedia");
+                updateCurrentArticleFromView();
             }
         });
         webView.setWebViewClient(new WebViewClient() {
+            /* TODO we could perhaps go completely without a web server by
+             * also overriding shouldInterceptRequest (from api 11 on...)
+             */
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (url.startsWith("http://127.0.0.1")) {
@@ -81,12 +98,25 @@ public class MainActivity extends SherlockFragmentActivity implements
                     return true;
                 }
             }
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                currentInterLanguageLinks = null;
+                currentTitle = null;
+                otherLanguagesMenuItem.setVisible(false);
+                onlineArticleMenuItem.setVisible(false);
+            }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                updateCurrentArticleFromView();
+            }
         });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getSupportMenuInflater().inflate(R.menu.main_activity, menu);
+        onlineArticleMenuItem = menu.findItem(R.id.menu_online_article);
+        otherLanguagesMenuItem = menu.findItem(R.id.menu_other_languages);
         searchMenuItem = menu.findItem(R.id.menu_search_view);
         searchMenuItem.setOnActionExpandListener(this);
         if (expandSearchMenuItem) {
@@ -136,9 +166,18 @@ public class MainActivity extends SherlockFragmentActivity implements
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        /* TODO why is this not done automatically? */
         webView.saveState(outState);
-        Log.i("mainactivity", outState.toString());
+    }
+
+    private void updateCurrentArticleFromView() {
+        EvopediaWebServer webServer = evopedia.getWebServer();
+        String url = Uri.parse(webView.getUrl()).getPath();
+        currentTitle = webServer.getTitleFromURL(url); /* TODO cache this? */
+        currentInterLanguageLinks = webServer.getInterLanguageLinks(url);
+        if (currentInterLanguageLinks != null && !currentInterLanguageLinks.isEmpty())
+            otherLanguagesMenuItem.setVisible(true);
+        if (currentTitle != null)
+            onlineArticleMenuItem.setVisible(true);
     }
 
     private void loadArticle(Title t) {
@@ -225,6 +264,45 @@ public class MainActivity extends SherlockFragmentActivity implements
         startActivity(i);
     }
 
+    private void showOtherLanguagePicker() {
+        if (currentInterLanguageLinks == null)
+            return;
+
+        final Set<String> localLanguages = evopedia.getArchiveManager()
+                        .getDefaultLocalArchives().keySet();
+        final ArrayAdapter<Object> adapter = new ArrayAdapter<Object>(
+                this, android.R.layout.simple_dropdown_item_1line);
+        for (InterLanguageLink l : currentInterLanguageLinks) {
+            if (localLanguages.contains(l.getLanguageID())) {
+                adapter.add(l);
+            }
+        }
+        adapter.add(""); /* TODO non-selectable plus info: "Online Wikipedia" */
+        for (InterLanguageLink l : currentInterLanguageLinks) {
+            if (!localLanguages.contains(l.getLanguageID())) {
+                adapter.add(l);
+            }
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose the Language");
+        builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Object item = adapter.getItem(which);
+                if (item instanceof InterLanguageLink) {
+                    InterLanguageLink l = (InterLanguageLink) item;
+                    webView.loadUrl(evopedia.getServerUri().toString() +
+                            "/wiki/" + l.getLanguageID() + '/' +
+                            l.getArticleName());
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -241,7 +319,15 @@ public class MainActivity extends SherlockFragmentActivity implements
                             Toast.LENGTH_SHORT).show();
                 }
                 return true;
-                // case R.id.menu_settings:
+            // case R.id.menu_settings:
+            case R.id.menu_other_languages:
+                showOtherLanguagePicker();
+                return true;
+            case R.id.menu_online_article:
+                if (currentTitle != null) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, currentTitle.getOrigUri()));
+                }
+                return true;
             case R.id.menu_send_feedback:
                 sendFeedback();
                 return true;

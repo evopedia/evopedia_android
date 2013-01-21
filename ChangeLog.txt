@@ -1,9 +1,19 @@
 
+beta4
+
+  * links to online Wikipedia
+  * inter-language links
+  * bugfix (start with deleted archive)
+  * closes: #012, #015, #016
+
+ -- Evopedia Developers <devs@evopedia.info> 2013-01-20
+
 beta3
 
   * out of memory errors caught
   * back stack handling improved
   * find external SD cards
+  * closes: #004, #005, #009
 
  -- Evopedia Developers <devs@evopedia.info> 2013-01-18
 
