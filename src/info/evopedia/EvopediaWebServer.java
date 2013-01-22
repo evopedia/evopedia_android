@@ -8,28 +8,17 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
 import android.net.Uri;
-import android.text.Html;
 import android.util.Log;
-
-/* TODO general idea:
- * is it possible to register a new url handler so that
- * we could retrieve article data via an intent call? 
- */
 
 public class EvopediaWebServer implements Runnable {
     private final ArchiveManager manager;
@@ -122,7 +111,6 @@ public class EvopediaWebServer implements Runnable {
             @Override
             public void handleRequest(Socket client, Uri uri,
                     List<String> pathSegments) throws IOException {
-                /* TODO use browser cache! */
                 if (pathSegments.size() < 2) {
                     outputHttpHeader(client, "404");
                     return;
@@ -214,19 +202,14 @@ public class EvopediaWebServer implements Runnable {
                     outputHttpHeader(client, "404");
                     return;
                 }
-                article = extractInterLanguageLinks(article, uri);
-                /* TODO header stuff */
-                /* TODO we have too much copying going on here,
-                 * in extractInterLanguageLinks and in outputResponse.
-                 * try to stream the data out (possibly even from the gzip routine). */
                 ByteArrayOutputStream data = new ByteArrayOutputStream(article.length);
                 data.write(getHTMLHeader(t.getReadableName()));
-                /* TODO some links */
                 data.write("</div>".getBytes());
-                /* TODO rtl */
-                data.write(article);
-                data.write(getAssetFile("footer.html"));
-                outputResponse(client, data.toByteArray(), "text/html; charset=\"utf-8\"");
+
+                extractInterLanguageLinksAndWrite(article, uri, data);
+
+                getAssetFile("footer.html").writeTo(data);
+                outputResponse(client, data, "text/html; charset=\"utf-8\"");
             }
         };
         pathMappings.put("wiki", articleRequestHandler);
@@ -294,21 +277,32 @@ public class EvopediaWebServer implements Runnable {
         }
     }
 
-    private byte[] extractInterLanguageLinks(byte[] articleData, Uri uri) {
-        final String article = new String(articleData);
+    private void extractInterLanguageLinksAndWrite(byte[] articleData, Uri uri, ByteArrayOutputStream out)
+                    throws IOException {
+        /* TODO alas, we first have to convert the bytes to characters and then back
+         * again to be able to search for the language link marker */
+        String article = new String(articleData);
 
         final int langStart = article.lastIndexOf("<h5>");
-        if (langStart < 0 || article.indexOf("<div class=\"pBody\">", langStart) < 0)
-            return articleData;
+        if (langStart < 0 || article.indexOf("<div class=\"pBody\">", langStart) < 0) {
+            out.write(articleData);
+            return;
+        }
 
         final int langEnd = article.indexOf("<div class=\"visualClear\"></div>", langStart);
-        if (langEnd < 0)
-            return articleData;
+        if (langEnd < 0) {
+            out.write(articleData);
+            return;
+        }
 
+        out.write(article.substring(0, langStart).getBytes());
+        out.write(article.substring(langEnd).getBytes());
+
+        article = article.substring(langStart, langEnd);
         ArrayList<InterLanguageLink> links = new ArrayList<InterLanguageLink>();
 
         final Pattern p = Pattern.compile("<a href=\"(\\./)?\\.\\./([^/]*)/([^\"]*)\">([^<]*)</a>");
-        final Matcher m = p.matcher(article.substring(langStart, langEnd));
+        final Matcher m = p.matcher(article);
         while (m.find()) {
             String languageID = m.group(2);
             String languageName = m.group(4);
@@ -316,14 +310,6 @@ public class EvopediaWebServer implements Runnable {
             links.add(new InterLanguageLink(languageID, languageName, articleName));
         }
         interLanguageLinks.setLinks(uri.toString(), links);
-
-        byte[] cleanedArticleData = new byte[articleData.length - (langEnd - langStart)];
-        System.arraycopy(articleData, 0, cleanedArticleData, 0,
-                         langStart);
-        System.arraycopy(articleData, langEnd, cleanedArticleData, langStart,
-                         articleData.length - langEnd);
-
-        return cleanedArticleData;
     }
 
     private void outputHttpHeader(Socket client, String code, String contentType)
@@ -349,8 +335,20 @@ public class EvopediaWebServer implements Runnable {
     }
 
 
+    private void outputResponse(Socket client, ByteArrayOutputStream response, String contentType) throws IOException {
+        String header = "HTTP/1.1 200 Ok\r\n" +
+                        "Content-Type: " + contentType + "\r\n" +
+                        "Content-Length: " + response.size() + "\r\n" +
+                        "\r\n";
+        client.getOutputStream().write(header.getBytes());
+        response.writeTo(client.getOutputStream());
+    }
+
+    private void outputResponse(Socket client, ByteArrayOutputStream response) throws IOException {
+        outputResponse(client, response, "text/html; charset=\"utf-8\"");
+    }
+
     private void outputResponse(Socket client, byte[] response, String contentType) throws IOException {
-        /* TODO cache issues */
         String header = "HTTP/1.1 200 Ok\r\n" +
                         "Content-Type: " + contentType + "\r\n" +
                         "Content-Length: " + response.length + "\r\n" +
@@ -363,20 +361,21 @@ public class EvopediaWebServer implements Runnable {
         outputResponse(client, response, "text/html; charset=\"utf-8\"");
     }
 
+
     private byte[] getHTMLHeader(String title) throws IOException {
-        String header = new String(getAssetFile("header.html"));
+        String header = getAssetFile("header.html").toString();
         header = header.replace("TITLE", title); /* TODO escape: Html.escapeHtml(title)); */
         return header.getBytes();
     }
 
-    private byte[] getAssetFile(String name) throws IOException {
+    private ByteArrayOutputStream getAssetFile(String name) throws IOException {
         ByteArrayOutputStream data = new ByteArrayOutputStream();
         byte[] buf = new byte[512];
         InputStream str = assets.open(name);
         while (true) {
             int n = str.read(buf);
             if (n < 0) {
-                return data.toByteArray();
+                return data;
             } else {
                 data.write(buf, 0, n);
             }

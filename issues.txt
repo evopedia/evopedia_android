@@ -17,7 +17,9 @@ OPEN:
    008 searching inside the webview (showFindDialog?)
    013 nearby articles
    014 do memory problems also occur on real devices?
-   017 speed optimizations: cache static responses, try to save some memory
+   017 speed optimizations: cache static responses
+       (does not seem necessary, they are not requested twice),
+       try to save some memory
 DUMP PROCESS:
  010 there are some html files that are redirects -> change them while packaging
  011 wikivoyage
