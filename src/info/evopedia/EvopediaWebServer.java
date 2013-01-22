@@ -5,9 +5,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.content.res.AssetManager;
-import android.net.Uri;
 import android.util.Log;
 
 public class EvopediaWebServer implements Runnable {
@@ -28,8 +30,7 @@ public class EvopediaWebServer implements Runnable {
     private final InterLanguageLinkCache interLanguageLinks;
 
     private interface RequestHandler {
-        public void handleRequest(Socket client, Uri uri,
-                List<String> pathSegments) throws IOException;
+        public void handleRequest(Socket client, String encodedPath, List<String> pathSegments) throws IOException;
     }
 
     private Map<String, RequestHandler> pathMappings;
@@ -51,13 +52,14 @@ public class EvopediaWebServer implements Runnable {
         return interLanguageLinks.getLinks(articleUrl);
     }
 
-    public Title getTitleFromURL(String url) {
-        List<String> parts = Uri.parse(url).getPathSegments();
-        if (parts.size() != 3 || !parts.get(0).equals("wiki"))
+    public Title getTitleFromPath(String encodedPath, List<String> pathSegments) {
+        if (pathSegments == null)
+            pathSegments = decodePath(encodedPath);
+        if (pathSegments.size() != 3 || !pathSegments.get(0).equals("wiki"))
             return null;
 
-        String language = parts.get(1);
-        String articleName = parts.get(2);
+        String language = pathSegments.get(1);
+        String articleName = pathSegments.get(2);
 
         LocalArchive archive = manager.getDefaultLocalArchive(language);
 
@@ -69,11 +71,12 @@ public class EvopediaWebServer implements Runnable {
 
     public void bindSocket() {
         try {
-            socket = new ServerSocket(0, 0,
-                    InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }));
-// TODO make this a setting
 //            socket = new ServerSocket(0, 0,
-//                    InetAddress.getByAddress(new byte[] { 0, 0, 0, 0 }));
+//                    InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }));
+// TODO make this a setting
+            socket = new ServerSocket(0, 0,
+                    InetAddress.getByAddress(new byte[] { 0, 0, 0, 0 }));
+            Log.i("EvopediaWebServer", "Listening on port " + socket.getLocalPort());
         } catch (UnknownHostException e) {
             socket = null;
         } catch (IOException e) {
@@ -101,16 +104,16 @@ public class EvopediaWebServer implements Runnable {
 
         pathMappings.put("", new RequestHandler() {
             @Override
-            public void handleRequest(Socket client, Uri uri,
-                    List<String> pathSegments) throws IOException {
+            public void handleRequest(Socket client, String encodedPath,
+                            List<String> pathSegments) throws IOException {
                 outputResponse(client, getAssetFile("static/index.html")    );
             }
         });
 
         pathMappings.put("static", new RequestHandler() {
             @Override
-            public void handleRequest(Socket client, Uri uri,
-                    List<String> pathSegments) throws IOException {
+            public void handleRequest(Socket client, String encodedPath,
+                            List<String> pathSegments) throws IOException {
                 if (pathSegments.size() < 2) {
                     outputHttpHeader(client, "404");
                     return;
@@ -127,70 +130,45 @@ public class EvopediaWebServer implements Runnable {
         });
 
         RequestHandler articleRequestHandler = new RequestHandler() {
-            private void redirectToCorrectURL(Socket client,
-                    String language, String articleName,
-                    List<String> pathSegments) throws IOException {
-                if (language != null && language.length() > 1
-                        /* TODO and network connection allowed */) {
-                        /* TODO redirect to online Wikipedia */
-                        /*
-                        String language = pathSegments.get(1);
-                        outputRedirect(client, Uri.fromParts("http",
-                                "//" + language + ".wikipedia.org/wiki/" +
-                                pathSegments.subList(1, pathSegments.size()).join("/"), null));
-                        */
+            private void tryRedirectToCorrectURL(Socket client, String encodedPath,
+                        List<String> pathSegments) throws IOException {
+                String articleName;
+                if (pathSegments.size() >= 3) {
+                    /* redirect to Wikipedia */
+                    outputRedirect(client, encodedPath.replaceFirst("/wiki/([^/]*)/(.*)",
+                                                         "http://$1.wikipedia.org/wiki/$2"));
                     return;
-                }
-                /* language not specified, try to find title in any local archive */
-                for (LocalArchive a : manager.getDefaultLocalArchives().values()) {
-                    if (a.getTitle(articleName) != null) {
-                        outputRedirect(client, Uri.parse("/wiki/" + a.getLanguage() + "/" + articleName));
-                        return;
+                } else {
+                    /* language not specified, try to find title in any local archive */
+                    articleName = pathSegments.get(1);
+                    for (LocalArchive a : manager.getDefaultLocalArchives().values()) {
+                        if (a.getTitle(articleName) != null) {
+                            outputRedirect(client, URLEncoder.encode("/wiki/" + a.getLanguage() + "/" + articleName,
+                                                                     "utf-8"));
+                            return;
+                        }
                     }
                 }
                 outputHttpHeader(client, "404");
             }
 
             @Override
-            public void handleRequest(Socket client, Uri uri,
+            public void handleRequest(Socket client, String encodedPath,
                     List<String> pathSegments) throws IOException {
-                /* TODO add misplaced math image workaround (bug still there?) */
                 if (pathSegments.size() < 2) {
                     outputHttpHeader(client, "404");
                     return;
                 }
-                if (pathSegments.get(1).equals("math")) {
-                    /* this is actually a math image */
-                    /* TODO redirect */
+
+                Title t = getTitleFromPath(encodedPath, pathSegments);
+                if (t == null) {
+                    tryRedirectToCorrectURL(client, encodedPath, pathSegments);
                     return;
                 }
 
-                /* TODO we should use getTitleFromURL().resolveRedirect(), but then we would not be
-                 * able to retrieve articleName and language if there is an error
-                 */
-                String articleName;
-                String language;
-
-                if (uri.getEncodedPath().endsWith("/")) {
-                    articleName = "";
-                    language = pathSegments.size() >= 2 ? pathSegments.get(1) : null;
-                } else {
-                    articleName = pathSegments.get(pathSegments.size() - 1);
-                    language = pathSegments.size() >= 3 ? pathSegments.get(1) : null;
-                }
-
-                /* TODO this does not work if language is null! */
-                LocalArchive archive = manager.getDefaultLocalArchive(language);
-
-                if (archive == null) {
-                    redirectToCorrectURL(client, language, articleName, pathSegments);
-                    return;
-                }
-
-                Title t = archive.getTitle(articleName).resolveRedirect();
                 byte[] article;
                 try {
-                    article = archive.getArticle(t);
+                    article = t.getArchive().getArticle(t);
                 } catch (OutOfMemoryError e) {
                     /* TODO nicer error page, ask browser to release memory? */
                     outputHttpHeader(client, "500");
@@ -206,7 +184,7 @@ public class EvopediaWebServer implements Runnable {
                 data.write(getHTMLHeader(t.getReadableName()));
                 data.write("</div>".getBytes());
 
-                extractInterLanguageLinksAndWrite(article, uri, data);
+                extractInterLanguageLinksAndWrite(article, encodedPath, data);
 
                 getAssetFile("footer.html").writeTo(data);
                 outputResponse(client, data, "text/html; charset=\"utf-8\"");
@@ -217,7 +195,7 @@ public class EvopediaWebServer implements Runnable {
 
         pathMappings.put("math", new RequestHandler() {
             @Override
-            public void handleRequest(Socket client, Uri uri,
+            public void handleRequest(Socket client, String encodedPath,
                     List<String> pathSegments) throws IOException {
                 String hexStr = pathSegments.get(pathSegments.size() - 1).substring(0, 32);
 
@@ -246,6 +224,21 @@ public class EvopediaWebServer implements Runnable {
          */
     }
 
+    private List<String> decodePath(String path) {
+        if (path.startsWith("/"))
+            path = path.substring(1);
+
+        List<String> parts = new ArrayList<String>();
+        for (String s : path.split("/")) {
+            try {
+                parts.add(URLDecoder.decode(s, "utf-8"));
+            } catch (UnsupportedEncodingException e) {
+                parts.add(s);
+            }
+        }
+        return parts;
+    }
+
     private void handleRequest(Socket client) {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -256,16 +249,16 @@ public class EvopediaWebServer implements Runnable {
                 outputHttpHeader(client, "404");
                 return;
             }
-            Uri uri = Uri.parse(tokens[1]);
-            Log.i("EvopediaWebServer", "Got request: " + uri.toString());
+            String path = tokens[1];
+            Log.i("EvopediaWebServer", "Got request: " + path);
 
-            List<String> pathSegments = uri.getPathSegments();
+            List<String> pathSegments = decodePath(path);
 
             RequestHandler handler = pathMappings.get(pathSegments.size() > 0 ? pathSegments.get(0) : "");
             if (handler == null) {
                 outputHttpHeader(client, "404");
             } else {
-                handler.handleRequest(client, uri, pathSegments);
+                handler.handleRequest(client, path, pathSegments);
             }
         } catch (IOException exc) {
             Log.e("EvopediaWebServer", "IOException", exc);
@@ -277,10 +270,8 @@ public class EvopediaWebServer implements Runnable {
         }
     }
 
-    private void extractInterLanguageLinksAndWrite(byte[] articleData, Uri uri, ByteArrayOutputStream out)
+    private void extractInterLanguageLinksAndWrite(byte[] articleData, String path, ByteArrayOutputStream out)
                     throws IOException {
-        /* TODO alas, we first have to convert the bytes to characters and then back
-         * again to be able to search for the language link marker */
         String article = new String(articleData);
 
         final int langStart = article.lastIndexOf("<h5>");
@@ -309,7 +300,7 @@ public class EvopediaWebServer implements Runnable {
             String articleName = m.group(3);
             links.add(new InterLanguageLink(languageID, languageName, articleName));
         }
-        interLanguageLinks.setLinks(uri.toString(), links);
+        interLanguageLinks.setLinks(path, links);
     }
 
     private void outputHttpHeader(Socket client, String code, String contentType)
@@ -328,10 +319,9 @@ public class EvopediaWebServer implements Runnable {
         outputHttpHeader(client, "200", "text/html; charset=\"utf-8\"");
     }
 
-    private void outputRedirect(Socket client, Uri target) throws IOException {
-        client.getOutputStream().write(
-                ("HTTP/1.0 302 Ok\r\nLocation: " +
-                        target.toString()).getBytes());
+    private void outputRedirect(Socket client, String target) throws IOException {
+        client.getOutputStream().write(("HTTP/1.0 302 Ok\r\nLocation: " +
+                                            target).getBytes());
     }
 
 

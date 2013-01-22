@@ -15,5 +15,5 @@
     <string name="menu_online_article">Article at wikipedia.org</string>
     <string name="menu_online_article_short">At wikipedia.org</string>
     <string name="menu_other_languages">In other languages</string>
-    <string name="menu_other_languages_short">other languages</string>
+    <string name="menu_other_languages_short">Other languages</string>
 </resources>

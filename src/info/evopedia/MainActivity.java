@@ -1,5 +1,7 @@
 package info.evopedia;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -171,9 +173,14 @@ public class MainActivity extends SherlockFragmentActivity implements
 
     private void updateCurrentArticleFromView() {
         EvopediaWebServer webServer = evopedia.getWebServer();
-        String url = Uri.parse(webView.getUrl()).getPath();
-        currentTitle = webServer.getTitleFromURL(url); /* TODO cache this? */
-        currentInterLanguageLinks = webServer.getInterLanguageLinks(url);
+        try {
+            String path = (new URL(webView.getUrl())).getPath();
+            currentTitle = webServer.getTitleFromPath(path, null);
+            currentInterLanguageLinks = webServer.getInterLanguageLinks(path);
+        } catch (MalformedURLException e) {
+            currentTitle = null;
+            currentInterLanguageLinks = null;
+        }
         if (currentInterLanguageLinks != null && !currentInterLanguageLinks.isEmpty())
             otherLanguagesMenuItem.setVisible(true);
         if (currentTitle != null)

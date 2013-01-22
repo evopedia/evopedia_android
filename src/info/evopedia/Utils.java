@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 
 import android.database.CharArrayBuffer;
 
@@ -46,5 +47,20 @@ public class Utils {
             out.write(buf,  0, i);
         }
         return out.toString();
+    }
+
+    public static String joinString(Collection<String> stringList, String junction) {
+        if (stringList == null || stringList.size() == 0)
+            return "";
+
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        for (String s : stringList) {
+            if (i > 0)
+                builder.append(junction);
+            builder.append(s);
+            i ++;
+        }
+        return builder.toString();
     }
 }
