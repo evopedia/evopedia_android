@@ -15,53 +15,42 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-/* TODO make this thread-safe */
-
 public class LocalArchive extends Archive {
     private StringNormalizer normalizer;
 
-    private String directory;
-    private Boolean readable;
-    private File titleFile;
-    private File mathIndexFile;
-    private File mathDataFile;
+    private final String directory;
+    private final Boolean readable;
+    private final File titleFile;
+    private final File mathIndexFile;
+    private final File mathDataFile;
 
     private String dumpOrigURL;
     private String dumpVersion;
     private String dumpNumArticles;
-    private Boolean normalizedTitles;
+    private boolean normalizedTitles;
 
     public LocalArchive(String directory, StringNormalizer normalizer) {
         this.directory = directory;
         titleFile = new File(directory, "titles.idx");
 
-        if (!checkExistenceOfFiles()) {
+        if (!checkExistenceOfFiles() || !titleFile.canRead() || !readMetadata()) {
             readable = false;
-            return;
-        }
-
-        if (!titleFile.canRead()) {
-            readable = false;
-            return;
-        }
-
-        if (!readMetadata()) {
-            readable = false;
-            return;
-        }
-
-        mathIndexFile = new File(directory, "math.idx");
-        mathDataFile = new File(directory, "math.dat");
-
-        normalizedTitles = true;
-
-        if (normalizedTitles) {
-            this.normalizer = normalizer;
+            mathIndexFile = null;
+            mathDataFile = null;
         } else {
-            this.normalizer = new NeutralNormalizer();
-        }
+            mathIndexFile = new File(directory, "math.idx");
+            mathDataFile = new File(directory, "math.dat");
 
-        readable = true;
+            normalizedTitles = true;
+
+            if (normalizedTitles) {
+                this.normalizer = normalizer;
+            } else {
+                this.normalizer = new NeutralNormalizer();
+            }
+
+            readable = true;
+        }
     }
 
     public static Archive fromDatabase(String language, String date, String data, StringNormalizer normalizer) {
@@ -169,7 +158,6 @@ public class LocalArchive extends Archive {
     }
 
     public Title getTitle(String name) {
-        /* TODO */
         TitleIterator iter = getTitlesWithPrefix(name);
         while (iter.hasNext()) {
             Title t = iter.next();

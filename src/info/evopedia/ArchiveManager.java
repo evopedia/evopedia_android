@@ -12,9 +12,7 @@ import android.content.Context;
 /* TODO make this thread-safe */
 
 public class ArchiveManager {
-    private Context context;
-
-    private DefaultNormalizer defaultNormalizer;
+    private final DefaultNormalizer defaultNormalizer;
 
     private AvailableArchivesDatabase availableArchivesDatabase;
 
@@ -30,9 +28,8 @@ public class ArchiveManager {
     private static ArchiveManager instance = null;
 
     private ArchiveManager(Context context) {
-        this.context = context;
-
-        initializeNormalizer();
+        defaultNormalizer = new DefaultNormalizer(
+                                    context.getResources().openRawResource(R.raw.transtbl));
 
         availableArchivesDatabase = new AvailableArchivesDatabase(context);
         archives = new HashMap<ArchiveID, Archive>();
@@ -43,16 +40,11 @@ public class ArchiveManager {
         fireOnArchiveChange(true);
     }
 
-    private void initializeNormalizer() {
-        InputStream translationTable = context.getResources().openRawResource(R.raw.transtbl);
-        defaultNormalizer = new DefaultNormalizer(translationTable);
-    }
-
     public StringNormalizer getDefaultNormalizer() {
         return defaultNormalizer;
     }
 
-    private void updateDefaultLocalArchives() {
+    private synchronized void updateDefaultLocalArchives() {
         HashMap<String, LocalArchive> newDefaultLocalArchives = new HashMap<String, LocalArchive>();
 
         for (Archive ar : archives.values()) {
@@ -72,76 +64,85 @@ public class ArchiveManager {
     private boolean addArchive(Archive archive) {
         ArchiveID id = archive.getID();
 
-        if (archives.containsKey(id)) {
-            /* only add archive, if it is more "local" than the current one */
-            Archive current = archives.get(id);
-            if (!archive.isMoreLocal(current) && !(current instanceof DownloadableArchive))
-                return false;
+        synchronized (this) {
+            if (archives.containsKey(id)) {
+                /* only add archive, if it is more "local" than the current one */
+                Archive current = archives.get(id);
+                if (!archive.isMoreLocal(current) && !(current instanceof DownloadableArchive))
+                    return false;
+            }
+            archives.put(id, archive);
+
+            availableArchivesDatabase.putArchive(archive);
+
+            if (archiveBulkChangeUnderway)
+                return true;
+
+            updateDefaultLocalArchives();
         }
-        archives.put(id, archive);
-
-        availableArchivesDatabase.putArchive(archive);
-
-        if (archiveBulkChangeUnderway)
-            return true;
-
-        updateDefaultLocalArchives();
         fireOnArchiveChange(archive instanceof LocalArchive);
 
         return true;
     }
 
     public void removeArchive(Archive archive) {
-        archives.remove(archive.getID());
-        availableArchivesDatabase.removeArchive(archive);
+        synchronized (this) {
+            archives.remove(archive.getID());
+            availableArchivesDatabase.removeArchive(archive);
 
-        if (!archiveBulkChangeUnderway) {
+            if (archiveBulkChangeUnderway)
+                return;
             updateDefaultLocalArchives();
-            fireOnArchiveChange(archive instanceof LocalArchive);
         }
+        fireOnArchiveChange(archive instanceof LocalArchive);
     }
 
     public void setDownloadableArchives(Map<ArchiveID, DownloadableArchive> newArchives) {
         archiveBulkChangeUnderway = true;
-        try {
-            for (Archive archive : archives.values()) {
-                if (archive instanceof DownloadableArchive)
-                    removeArchive(archive);
+        synchronized (this) {
+            try {
+                for (Archive archive : archives.values()) {
+                    if (archive instanceof DownloadableArchive)
+                        removeArchive(archive);
+                }
+                for (Archive archive : newArchives.values()) {
+                    addArchive(archive);
+                }
+            } finally {
+                archiveBulkChangeUnderway = false;
+                updateDefaultLocalArchives();
             }
-            for (Archive archive : newArchives.values()) {
-                addArchive(archive);
-            }
-        } finally {
-            archiveBulkChangeUnderway = false;
-            updateDefaultLocalArchives();
-            fireOnArchiveChange(true);
         }
+        fireOnArchiveChange(true);
     }
 
     public void setLocalArchives(Map<ArchiveID, LocalArchive> newArchives) {
         HashMap<ArchiveID, LocalArchive> currentLocalArchives = new HashMap<ArchiveID, LocalArchive>();
-        for (Archive archive : archives.values()) {
-            if (archive instanceof LocalArchive) {
-                currentLocalArchives.put(archive.getID(), (LocalArchive) archive);
+
+        synchronized (this) {
+            for (Archive archive : archives.values()) {
+                if (archive instanceof LocalArchive) {
+                    currentLocalArchives.put(archive.getID(), (LocalArchive) archive);
+                }
+            }
+
+            if (currentLocalArchives.equals(newArchives))
+                return;
+
+            archiveBulkChangeUnderway = true;
+            try {
+                for (Archive archive : currentLocalArchives.values()) {
+                    removeArchive(archive);
+                }
+                for (Archive archive : newArchives.values()) {
+                    addArchive(archive);
+                }
+            } finally {
+                archiveBulkChangeUnderway = false;
+                updateDefaultLocalArchives();
             }
         }
-
-        if (currentLocalArchives.equals(newArchives))
-            return;
-
-        archiveBulkChangeUnderway = true;
-        try {
-            for (Archive archive : currentLocalArchives.values()) {
-                removeArchive(archive);
-            }
-            for (Archive archive : newArchives.values()) {
-                addArchive(archive);
-            }
-        } finally {
-            archiveBulkChangeUnderway = false;
-            updateDefaultLocalArchives();
-            fireOnArchiveChange(true);
-        }
+        fireOnArchiveChange(true);
     }
 
     public Map<String, LocalArchive> getDefaultLocalArchives() {

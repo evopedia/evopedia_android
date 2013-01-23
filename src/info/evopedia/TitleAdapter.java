@@ -17,6 +17,8 @@ import android.widget.TextView;
 
 public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiveChangeListener, Runnable {
     private ArrayList<Title> currentTitles;
+    private ArrayList<String> currentFirstLines;
+    private ArrayList<String> currentSecondLines;
     private static final int increments = 20;
 
     /* accessed by new thread */
@@ -36,6 +38,8 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
 
         archiveManager = ArchiveManager.getInstance(activity.getApplicationContext());
         currentTitles = new ArrayList<Title>();
+        currentFirstLines = new ArrayList<String>();
+        currentSecondLines = new ArrayList<String>();
         archiveManager.addOnArchiveChangeListener(this);
 
         startOrRestartThread();
@@ -89,22 +93,10 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
             v = (LinearLayout) view;
         }
 
-        /* TODO performance: when the list of titles is extended,
-         * these views are built completely anew? */
-        Title t = currentTitles.get(position);
-        String remark = "Wikipedia " + t.getArchive().getLanguage(); /* TODO date? */
-        long articleLength = 0;
-        if (t.isRedirect()) {
-            Title orig = t.resolveRedirect();
-            if (orig != null)
-                articleLength = orig.getArticleLength();
-        } else {
-            articleLength = t.getArticleLength();
-        }
-        remark += String.format(", %.1f kB", (double) articleLength / 1000.0);
         ((TextView) v.findViewById(R.id.titleListItemFirstLine)).setText(
-                t.getReadableName());
-        ((TextView) v.findViewById(R.id.titleListItemSecondLine)).setText(remark);
+                currentFirstLines.get(position));
+        ((TextView) v.findViewById(R.id.titleListItemSecondLine)).setText(
+                currentSecondLines.get(position));
         return v;
     }
 
@@ -146,7 +138,31 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
         }
     }
 
+    private String getFirstLine(Title t) {
+        return t.getReadableName();
+    }
+
+    private String getSecondLine(Title t) { 
+        long articleLength = 0;
+        if (t.isRedirect()) {
+            Title orig = t.resolveRedirect();
+            if (orig != null)
+                articleLength = orig.getArticleLength();
+        } else {
+            articleLength = t.getArticleLength();
+        }
+        return "Wikipedia " + t.getArchive().getLanguage() +
+                activity.getString(R.string._1f_kb,
+                                   (double) articleLength / 1000.0);
+    }
+
     private void sendResult(final int prefixSeq, final boolean reload, final List<Title> titles) {
+        final ArrayList<String> firstLines = new ArrayList<String>(titles.size());
+        final ArrayList<String> secondLines = new ArrayList<String>(titles.size());
+        for (Title t : titles) {
+            firstLines.add(getFirstLine(t));
+            secondLines.add(getSecondLine(t));
+        }
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -154,9 +170,13 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
                     return;
                 if (reload) {
                     currentTitles = new ArrayList<Title>(titles);
+                    currentFirstLines = firstLines;
+                    currentSecondLines = secondLines;
                     notifyDataSetChanged();
                 } else if (titles.size() > 0) {
                     currentTitles.addAll(titles);
+                    currentFirstLines.addAll(firstLines);
+                    currentSecondLines.addAll(secondLines);
                     notifyDataSetChanged();
                 }
             }
@@ -165,7 +185,7 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
 
     private MergingTitleIterator createTitleIterator(String prefix) {
         ArrayList<TitleIterator> iterators = new ArrayList<TitleIterator>();
-        /* TODO archivemanager needs to be thread safe */
+
         for (LocalArchive archive : archiveManager.getDefaultLocalArchives().values()) {
             iterators.add(archive.getTitlesWithPrefix(prefix));
         }

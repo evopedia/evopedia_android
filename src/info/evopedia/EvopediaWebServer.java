@@ -135,6 +135,7 @@ public class EvopediaWebServer implements Runnable {
                 String articleName;
                 if (pathSegments.size() >= 3) {
                     /* redirect to Wikipedia */
+                    /* TODO "$1.wikipedia.org" is not always correct */
                     outputRedirect(client, encodedPath.replaceFirst("/wiki/([^/]*)/(.*)",
                                                          "http://$1.wikipedia.org/wiki/$2"));
                     return;
@@ -175,9 +176,8 @@ public class EvopediaWebServer implements Runnable {
                     return;
                 }
                 if (article == null) {
-                    /* TODO could be the url of an image or data file, redirect to online
-                     * wikipedia in this case */
-                    outputHttpHeader(client, "404");
+                    /* TODO nicer error page */
+                    outputHttpHeader(client, "500");
                     return;
                 }
                 ByteArrayOutputStream data = new ByteArrayOutputStream(article.length);

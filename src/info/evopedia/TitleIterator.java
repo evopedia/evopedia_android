@@ -14,7 +14,7 @@ public class TitleIterator implements Iterator<Title> {
     private LocalArchive archive;
 
     private Title nextTitle;
-    
+
     public TitleIterator() {
         checkHasNext();
     }
@@ -52,7 +52,7 @@ public class TitleIterator implements Iterator<Title> {
             }
         }
     }
-    
+
     public Title peekNext() {
         return nextTitle;
     }

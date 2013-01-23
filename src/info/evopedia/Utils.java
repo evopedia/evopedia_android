@@ -1,12 +1,9 @@
 package info.evopedia;
 
 import java.io.ByteArrayOutputStream;
-import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-
-import android.database.CharArrayBuffer;
 
 public class Utils {
     public static final int compareByteArrays(byte[] a, byte[] b) {

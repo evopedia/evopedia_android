@@ -59,7 +59,7 @@ public class Title implements Comparable<Title> {
     public int compareTo(Title other) {
         if (other == null)
             return -1;
-    
+
         String thisName = archive.getStringNormalizer().normalize(name);
         String otherName = other.archive.getStringNormalizer().normalize(other.name);
         return thisName.compareTo(otherName);
@@ -68,7 +68,7 @@ public class Title implements Comparable<Title> {
     public String getName() {
         return name;
     }
-    
+
     public String getReadableName() {
         return name.replace("_", " ");
     }
@@ -76,7 +76,7 @@ public class Title implements Comparable<Title> {
     public LocalArchive getArchive() {
         return archive;
     }
-    
+
     public short getFileNr() {
         return fileNr;
     }
@@ -92,7 +92,7 @@ public class Title implements Comparable<Title> {
     public long getArticleLength() {
         return articleLength;
     }
-    
+
     public String toString() {
         return getName();
     }
@@ -100,7 +100,7 @@ public class Title implements Comparable<Title> {
     public boolean isRedirect() {
         return fileNr == 0xff;
     }
-    
+
     public long getRedirectOffset() {
         return blockStart;
     }
@@ -114,7 +114,6 @@ public class Title implements Comparable<Title> {
         return uriBuilder.appendPath(getName()).build();
     }
 
-    /* TODO I think these should be moved somewhere else */
     public Uri toUri() {
         if (name == null) return null;
         return Uri.parse("evopedia://" + archive.getLanguage() + "_" + archive.getDate() + "/#" + titleOffset);

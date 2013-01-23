@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_hint">Suche nach Wikipedia Artikeln</string>
+    <string name="menu_search_hint">Titel suchen</string>
+    <string name="searchdialog_text_hint">Suche Titel</string>
+    <string name="menu_settings">Einstellungen</string>
+    <string name="menu_scan">Archive suchen</string>
+    <string name="menu_scan_short">Archive suchen</string>
+    <string name="menu_search">Artikel suchen</string>
+    <string name="menu_search_short">Suchen</string>
+    <string name="menu_send_feedback">Rückmeldung an Entwickler</string>
+    <string name="menu_send_feedback_short">Rückmeldung</string>
+    <string name="menu_online_article">Artikel auf wikipedia.org</string>
+    <string name="menu_online_article_short">Auf wikipedia.org</string>
+    <string name="menu_other_languages">In anderen Sprachen</string>
+    <string name="menu_other_languages_short">Andere Sprachen</string>
+    <string name="choose_language">Sprache auswählen</string>
+    <string name="external_storage_not_mounted_">Externer Speicher nicht bereitgestellt.</string>
+    <string name="could_not_find_any_archives_">Keine Archive gefunden.</string>
+    <plurals name="found_x_archives__">
+        <item quantity="one">Ein Archiv gefunden: </item>
+        <item quantity="other">%d Archive gefunden: </item>
+    </plurals>
+    <string name="searching_for_archives_">Suche Archive...</string>
+</resources>

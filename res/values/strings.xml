@@ -16,4 +16,13 @@
     <string name="menu_online_article_short">At wikipedia.org</string>
     <string name="menu_other_languages">In other languages</string>
     <string name="menu_other_languages_short">Other languages</string>
+    <string name="choose_language">Choose the Language</string>
+    <string name="external_storage_not_mounted_">External storage not mounted.</string>
+    <string name="_1f_kb">, %.1f kB</string>
+    <string name="could_not_find_any_archives_">Could not find any archives.</string>
+    <plurals name="found_x_archives__">
+        <item quantity="one">Found one archive: </item>
+        <item quantity="other">Found %d archives: </item>
+    </plurals>
+    <string name="searching_for_archives_">Searching for archives...</string>
 </resources>

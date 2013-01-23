@@ -1,21 +1,14 @@
 package info.evopedia;
 
-import java.util.Locale;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 
 import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.net.Uri;
-
-/*
- * TODO Browser: reload button
- * TODO browser: zoom - perhaps simply as setting (initial zoom in html header)
- * TODO browser: back navigation
- * TODO translation
- * TODO menu: "fullscreen" (hide action bar)?
- * TODO only show the search button if there are archives
- */
 
 public class Evopedia extends Application {
     private ArchiveManager archiveManager;
@@ -64,18 +57,23 @@ public class Evopedia extends Application {
         return webServer;
     }
 
-    public Uri getServerUri() {
-        /* TODO is this really they way to construct URIs? */
-        return Uri.parse(String.format(Locale.US,
-                            "http://127.0.0.1:%d", webServer.getPort()));
+    public URL getServerURL() {
+        try {
+            return new URL("http", "127.0.0.1", webServer.getPort(), "");
+        } catch (MalformedURLException e) {
+            return null;
+        }
     }
 
-    public Uri getArticleUri(Title title) {
-        /* TODO is this really they way to construct URIs? */
-        String uri = String.format(Locale.US, "http://127.0.0.1:%d/wiki/%s/%s",
-                webServer.getPort(),
-                Uri.encode(title.getArchive().getLanguage()),
-                Uri.encode(title.getName()));
-        return Uri.parse(uri);
+    public URL getArticleURL(Title title) {
+        try {
+            return new URL(getServerURL(), "/wiki/" +
+                        URLEncoder.encode(title.getArchive().getLanguage(), "utf-8") +
+                        "/" + URLEncoder.encode(title.getName(), "utf-8"));
+        } catch (MalformedURLException e) {
+            return null;
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
     }
 }

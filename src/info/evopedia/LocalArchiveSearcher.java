@@ -22,6 +22,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.widget.Toast;
@@ -43,7 +44,7 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
             dialog.setProgressNumberFormat(null);
         }
         dialog.setOnCancelListener(this);
-        dialog.setTitle("Searching for archives...");
+        dialog.setTitle(context.getString(R.string.searching_for_archives_));
     }
 
     @Override
@@ -133,7 +134,9 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
         if (isCancelled())
             return;
 
-        /* TODO will break if there are symlink-loops */
+        /* protection against symlink-loops */
+        if (dir.length() >= 800)
+            return;
 
         if ((new File(dir, "titles.idx")).exists() &&
                 (new File(dir, "metadata.txt")).exists()) {
@@ -159,10 +162,13 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
             dialog.dismiss();
         }
         if (archives.size() == 0) {
-            Toast.makeText(context, "Could not find any archives.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, R.string.could_not_find_any_archives_, Toast.LENGTH_SHORT).show();
             /* TODO better to use alert? */
         } else {
-            String text = "Found " + archives.size() + " archives: ";
+            String text = context.getResources().getQuantityString(
+                                        R.plurals.found_x_archives__,
+                                        archives.size(),
+                                        archives.size());
             int i = 0;
             for (LocalArchive a : archives.values()) {
                 text += a.getLanguage() + " (" + a.getDate() + ")";

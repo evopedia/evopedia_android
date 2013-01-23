@@ -1019,12 +1019,16 @@ containing a value of this type.
         public static final int titlelistitem=0x7f03001b;
     }
     public static final class menu {
-        public static final int main_activity=0x7f0d0000;
+        public static final int main_activity=0x7f0e0000;
+    }
+    public static final class plurals {
+        public static final int found_x_archives__=0x7f0d0000;
     }
     public static final class raw {
         public static final int transtbl=0x7f050000;
     }
     public static final class string {
+        public static final int _1f_kb=0x7f0b0020;
         /**  Content description for the action bar "home" affordance. [CHAR LIMIT=NONE] 
          */
         public static final int abs__action_bar_home_description=0x7f0b0000;
@@ -1071,6 +1075,9 @@ containing a value of this type.
          */
         public static final int abs__shareactionprovider_share_with_application=0x7f0b0009;
         public static final int app_name=0x7f0b000f;
+        public static final int choose_language=0x7f0b001e;
+        public static final int could_not_find_any_archives_=0x7f0b0021;
+        public static final int external_storage_not_mounted_=0x7f0b001f;
         public static final int menu_online_article=0x7f0b001a;
         public static final int menu_online_article_short=0x7f0b001b;
         public static final int menu_other_languages=0x7f0b001c;
@@ -1085,6 +1092,7 @@ containing a value of this type.
         public static final int menu_settings=0x7f0b0013;
         public static final int search_hint=0x7f0b0010;
         public static final int searchdialog_text_hint=0x7f0b0012;
+        public static final int searching_for_archives_=0x7f0b0022;
     }
     public static final class style {
         /** 

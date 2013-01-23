@@ -2,11 +2,9 @@ package info.evopedia;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.DialogInterface;
@@ -14,10 +12,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
@@ -69,7 +65,11 @@ public class MainActivity extends SherlockFragmentActivity implements
     private void setupWebView() {
         webView = (WebView) findViewById(R.id.webView);
 
-        // webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setBuiltInZoomControls(true);
+        /* TODO setting?
+        webView.getSettings().setBlockNetworkImage(true); */
+
         final SherlockFragmentActivity activity = this;
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -104,8 +104,10 @@ public class MainActivity extends SherlockFragmentActivity implements
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 currentInterLanguageLinks = null;
                 currentTitle = null;
-                otherLanguagesMenuItem.setVisible(false);
-                onlineArticleMenuItem.setVisible(false);
+                if (otherLanguagesMenuItem != null)
+                    otherLanguagesMenuItem.setVisible(false);
+                if (onlineArticleMenuItem != null)
+                    onlineArticleMenuItem.setVisible(false);
             }
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -192,7 +194,7 @@ public class MainActivity extends SherlockFragmentActivity implements
             /* TODO show some not-found page */
         } else {
             Evopedia evopedia = (Evopedia) getApplication();
-            webView.loadUrl(evopedia.getArticleUri(t).toString());
+            webView.loadUrl(evopedia.getArticleURL(t).toString());
         }
     }
 
@@ -216,7 +218,7 @@ public class MainActivity extends SherlockFragmentActivity implements
 
     private void showInitialPage() {
         Evopedia evopedia = (Evopedia) getApplication();
-        webView.loadUrl(evopedia.getServerUri().toString());
+        webView.loadUrl(evopedia.getServerURL().toString());
     }
 
     private void checkFeedbackReminder() {
@@ -253,21 +255,21 @@ public class MainActivity extends SherlockFragmentActivity implements
         i.putExtra(
                 Intent.EXTRA_TEXT,
                 "Dear developers,\n"
-                        + "I tested evopedia and have the following remarks:\n"
+                        + " - I tested evopedia and have the following remarks:\n"
                         + "\n"
-                        + "I was able to download an archive:\n"
+                        + " - I was able to download an archive:\n"
                         + "(if not, what were the problems?)\n"
                         + "\n"
-                        + "I found the following bugs:\n"
+                        + " - I found the following bugs:\n"
                         + "(please provide detailed information)\n"
                         + "\n"
-                        + "The following improvements would be great:\n"
+                        + " - The following improvements would be great:\n"
                         + "\n"
-                        + "I found the \"global search\" feature and have the following remarks:\n"
-                        + "\n" + "General ideas/remarks:\n" + "\n"
-                        + "I used the following devices for testing:\n" + "\n"
-                        + "I learned about evopedia as follows:\n" + "\n"
-                        + "General rating (1-5):\n" + "\n");
+                        + " - I found the \"global search\" feature and have the following remarks:\n"
+                        + "\n" + " - General ideas/remarks:\n" + "\n"
+                        + " - I used the following devices for testing:\n" + "\n"
+                        + " - I learned about evopedia as follows:\n" + "\n"
+                        + " - General rating (1-5):\n" + "\n");
         startActivity(i);
     }
 
@@ -292,14 +294,14 @@ public class MainActivity extends SherlockFragmentActivity implements
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Choose the Language");
+        builder.setTitle(R.string.choose_language);
         builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Object item = adapter.getItem(which);
                 if (item instanceof InterLanguageLink) {
                     InterLanguageLink l = (InterLanguageLink) item;
-                    webView.loadUrl(evopedia.getServerUri().toString() +
+                    webView.loadUrl(evopedia.getServerURL().toString() +
                             "/wiki/" + l.getLanguageID() + '/' +
                             l.getArticleName());
                 }
@@ -322,7 +324,7 @@ public class MainActivity extends SherlockFragmentActivity implements
                             this);
                     searcher.execute(Environment.getExternalStorageDirectory());
                 } else {
-                    Toast.makeText(this, "External storage not mounted.",
+                    Toast.makeText(this, R.string.external_storage_not_mounted_,
                             Toast.LENGTH_SHORT).show();
                 }
                 return true;
