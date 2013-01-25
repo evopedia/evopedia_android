@@ -1,5 +1,7 @@
 package info.evopedia;
 
+import java.nio.charset.Charset;
+
 import android.net.Uri;
 import android.net.Uri.Builder;
 
@@ -46,13 +48,18 @@ public class Title implements Comparable<Title> {
         t.blockOffset = LittleEndianReader.readUInt32(positionData, 5);
         t.articleLength = LittleEndianReader.readUInt32(positionData, 9);
 
-        int titleLenBytes = encodedTitle.length - 15;
-        if (titleLenBytes > 0 && encodedTitle[encodedTitle.length - 1] == '\n')
-            titleLenBytes --;
-
-        t.name = new String(encodedTitle, 15, titleLenBytes);
+        t.name = parseNameOnly(encodedTitle);
 
         return t;
+    }
+
+    public static String parseNameOnly(byte[] encodedTitle) {
+        int len = encodedTitle.length;
+        if (len < 15)
+            return null;
+        if (len > 15 && encodedTitle[len - 1] == '\n')
+            len --;
+        return new String(encodedTitle, 15, len - 15);
     }
 
     @Override

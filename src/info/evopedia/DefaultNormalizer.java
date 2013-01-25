@@ -44,11 +44,17 @@ public class DefaultNormalizer implements StringNormalizer {
         str = str.toLowerCase(Locale.US);
         for (int i = 0; i < str.length(); i ++) {
             char c = str.charAt(i);
-            Character ct = normalizationMap.get(c);
-            if (ct == null) {
+            if (('a' <= c && c <= 'z') || ('0' <= c && c <= '9')) {
+                s.append(c);
+            } else if (c == ' ') {
                 s.append('_');
             } else {
-                s.append(ct);
+                Character ct = normalizationMap.get(c);
+                if (ct == null) {
+                    s.append('_');
+                } else {
+                    s.append(ct);
+                }
             }
         }
         return s.toString();

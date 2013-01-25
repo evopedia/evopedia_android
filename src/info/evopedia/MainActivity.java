@@ -328,7 +328,9 @@ public class MainActivity extends SherlockFragmentActivity implements
                             Toast.LENGTH_SHORT).show();
                 }
                 return true;
-            // case R.id.menu_settings:
+            case R.id.menu_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
             case R.id.menu_other_languages:
                 showOtherLanguagePicker();
                 return true;

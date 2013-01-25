@@ -8,6 +8,7 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -183,12 +184,20 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
         });
     }
 
-    private MergingTitleIterator createTitleIterator(String prefix) {
+    private MergingTitleIterator createTitleIterator(String query) {
         ArrayList<TitleIterator> iterators = new ArrayList<TitleIterator>();
 
-        for (LocalArchive archive : archiveManager.getDefaultLocalArchives().values()) {
-            iterators.add(archive.getTitlesWithPrefix(prefix));
+        if (PreferenceManager.getDefaultSharedPreferences(activity)
+                        .getBoolean("pref_titles_infix_search", false)) {
+            for (LocalArchive archive : archiveManager.getDefaultLocalArchives().values()) {
+                iterators.add(archive.getTitlesWithInfix(query));
+            }
+        } else {
+            for (LocalArchive archive : archiveManager.getDefaultLocalArchives().values()) {
+                iterators.add(archive.getTitlesWithPrefix(query));
+            }
         }
+
         return new MergingTitleIterator(iterators);
     }
 

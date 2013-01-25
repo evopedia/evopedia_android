@@ -21,8 +21,16 @@ OPEN:
        (does not seem necessary, they are not requested twice),
        try to save some memory
    018 add some icons (e.g. disambiguation)
-   019 full text search in titles
+   019 full text search in titles (takes too long for english wikipedia,
+       retry on faster device, turned into hidden option)
    020 use content provider for articles (also in webview)
+   021 night mode (theme)
+   022 random article as initial page
+   023 page history (plus clear) and bookmarks
+   024 "contact developer"
+   025 setting to disable network (menu item to allow load for current page)
 DUMP PROCESS:
  010 there are some html files that are redirects -> change them while packaging
  011 wikivoyage
+
+ideans from 

@@ -22,4 +22,8 @@
         android:titleCondensed="@string/menu_send_feedback_short"
         android:title="@string/menu_send_feedback"
         android:showAsAction="never"/>
+    <item android:id="@+id/menu_settings"
+        android:titleCondensed="@string/menu_settings"
+        android:title="@string/menu_settings"
+        android:showAsAction="never"/>
 </menu>

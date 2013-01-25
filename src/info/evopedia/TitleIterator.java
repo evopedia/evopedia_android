@@ -1,64 +1,55 @@
 package info.evopedia;
 
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Iterator;
 
 /* TODO add intermediate iterator that discards subsequent titles that
  * normalized to the same name and only retains the non-redirect title */
 
-public class TitleIterator implements Iterator<Title> {
-    private RandomAccessFile file;
-    private String prefix;
-    private StringNormalizer normalizer;
-    private LocalArchive archive;
+public abstract class TitleIterator implements Iterator<Title> {
+    protected final RandomAccessFile file;
+    protected final String query;
+    protected final StringNormalizer normalizer;
+    protected final LocalArchive archive;
 
+    private boolean fullyInitialized = false;
     private Title nextTitle;
 
-    public TitleIterator() {
-        checkHasNext();
-    }
-
-    public TitleIterator(RandomAccessFile file, String prefix, LocalArchive archive) {
+    public TitleIterator(RandomAccessFile file, String query, LocalArchive archive) {
         this.file = file;
         this.archive = archive;
         this.normalizer = archive.getStringNormalizer();
-        this.prefix = normalizer.normalize(prefix);
-
-        checkHasNext();
+        this.query = normalizer.normalize(query);
     }
 
     @Override
     public boolean hasNext() {
+        if (!fullyInitialized)
+            checkHasNext();
         return nextTitle != null;
     }
 
     private void checkHasNext() {
-        nextTitle = null;
-        if (file != null) {
-            try {
-                long offset = file.getFilePointer();
-                byte[] line = LocalArchive.readByteLine(file);
-                nextTitle = Title.parseTitle(line, archive, offset);
-                if (nextTitle == null)
-                    return;
-                if (prefix == null || prefix == "")
-                    return; /* just show all titles */
-                String tn = normalizer.normalize(nextTitle.getName());
-                if (!tn.startsWith(prefix))
-                    nextTitle = null;
-            } catch (IOException ex) {
-                nextTitle = null;
-            }
+        fullyInitialized = true;
+        if (file == null) {
+            nextTitle = null;
+        } else {
+            nextTitle = retrieveNext();
         }
     }
 
+    protected abstract Title retrieveNext();
+
     public Title peekNext() {
+        if (!fullyInitialized)
+            checkHasNext();
         return nextTitle;
     }
 
     @Override
     public Title next() {
+        if (!fullyInitialized)
+            checkHasNext();
         Title t = nextTitle;
         checkHasNext();
         return t;

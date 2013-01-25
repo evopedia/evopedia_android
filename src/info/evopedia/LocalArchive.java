@@ -170,12 +170,12 @@ public class LocalArchive extends Archive {
         return null;
     }
 
-    public TitleIterator getTitlesWithPrefix(String prefix) {
+    public TitlePrefixIterator getTitlesWithPrefix(String prefix) {
         RandomAccessFile titles;
         try {
             titles = new RandomAccessFile(titleFile, "r");
         } catch (FileNotFoundException exc) {
-            return new TitleIterator();
+            return new TitlePrefixIterator();
         }
 
         try {
@@ -211,9 +211,19 @@ public class LocalArchive extends Archive {
             }
             titles.seek(lo);
         } catch (IOException exc) {
-            return new TitleIterator();
+            return new TitlePrefixIterator();
         }
-        return new TitleIterator(titles, prefix, this);
+        return new TitlePrefixIterator(titles, prefix, this);
+    }
+
+    public TitleInfixIterator getTitlesWithInfix(String infix) {
+        RandomAccessFile titles;
+        try {
+            titles = new RandomAccessFile(titleFile, "r");
+        } catch (FileNotFoundException exc) {
+            return new TitleInfixIterator();
+        }
+        return new TitleInfixIterator(titles, infix, this);
     }
 
     public Title getTitleAtOffset(long offset) {
