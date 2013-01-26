@@ -1,4 +1,12 @@
 
+beta5
+
+  * cleanups, bugfixes
+  * infix search test implementation
+  * automatic error reporting
+
+ -- Evopedia Developers <devs@evopedia.info> 2013-01-26
+
 beta4
 
   * links to online Wikipedia
