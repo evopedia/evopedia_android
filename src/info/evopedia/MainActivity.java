@@ -1,5 +1,10 @@
 package info.evopedia;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -59,6 +64,7 @@ public class MainActivity extends SherlockFragmentActivity implements
 
         onNewIntent(getIntent());
 
+        checkAndSendCrashReports();
         checkFeedbackReminder();
     }
 
@@ -132,6 +138,55 @@ public class MainActivity extends SherlockFragmentActivity implements
                                         .findViewById(R.id.searchEditText));
 
         return true;
+    }
+
+    private void checkAndSendCrashReports() {
+        final File filesDir = getApplicationContext().getFilesDir().getAbsoluteFile();
+        File[] stackTraces = filesDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                return filename.startsWith("crashreport_");
+            }
+        });
+        if (stackTraces.length == 0)
+            return;
+
+        String crashReport = "";
+        for (File trace : stackTraces) {
+            try {
+                crashReport += "\n\n--------------------------------\n" +
+                        Utils.readInputStream(new FileInputStream(trace));
+            } catch (IOException e) {
+            }
+            trace.delete();
+        }
+        if (crashReport.length() == 0)
+            return;
+
+        final String finalCrashReport = crashReport;
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Application crashed");
+        builder.setMessage("Unfortunately, Evopedia crashed last time. " +
+                           "We are very sorry about that but with your " +
+                           "permission, information about the crash can be sent " +
+                           "to the developers so they can fix this bug.");
+        builder.setNegativeButton("Close", null);
+        builder.setPositiveButton("Send report", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent i = new Intent(Intent.ACTION_SENDTO);
+                i.setData(Uri.parse("mailto:devs@evopedia.info"));
+                i.putExtra(Intent.EXTRA_SUBJECT, "Evopedia Crash Report");
+                i.putExtra(Intent.EXTRA_TEXT,
+                        "Dear developers,\n"
+                                + "please help, Evopedia just crashed!\n"
+                                + "(you can add additional information if you like)\n"
+                                + "\n"
+                                + finalCrashReport);
+                startActivity(i);
+            }
+        });
+        builder.show();
     }
 
     @Override
