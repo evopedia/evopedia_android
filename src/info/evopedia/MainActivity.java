@@ -259,9 +259,10 @@ public class MainActivity extends SherlockFragmentActivity implements
             ArchiveManager manager = ArchiveManager.getInstance(this);
             if (manager.getDefaultLocalArchives().isEmpty()) {
                 showInitialPage();
-            } else {
+            } else if (webView.canGoBack()) {
                 // we rather display the last page (restored from the bundle)
-                //onSearchRequested();
+            } else {
+                onSearchRequested();
             }
         } else if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
             onSearchRequested(intent.getStringExtra(SearchManager.QUERY));

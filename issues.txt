@@ -30,7 +30,7 @@ OPEN:
    024 "contact developer"
    025 setting to disable network (menu item to allow load for current page)
 DUMP PROCESS:
- 010 there are some html files that are redirects -> change them while packaging
+ 010 there are some html files that are redirects -> change them while packaging (fixed)
  011 wikivoyage
 
 ideans from 
