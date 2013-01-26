@@ -1,7 +1,5 @@
 package info.evopedia;
 
-import java.nio.charset.Charset;
-
 import android.net.Uri;
 import android.net.Uri.Builder;
 
@@ -35,11 +33,11 @@ public class Title implements Comparable<Title> {
         byte[] positionData = new byte[13];
         System.arraycopy(encodedTitle, 2, positionData, 0, 13);
 
-        if ((escapes & (1 << 14)) == 1)
+        if ((escapes & (1 << 14)) != 0)
             escapes |= '\n';
 
         for (int i = 0; i < 13; i ++) {
-            if ((escapes & (1 << i)) == 1)
+            if ((escapes & (1 << i)) != 0)
                 positionData[i] = '\n';
         }
 
