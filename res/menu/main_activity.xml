@@ -14,6 +14,10 @@
         android:titleCondensed="@string/menu_other_languages_short"
         android:title="@string/menu_other_languages"
         android:visible="false"/>
+    <item android:id="@+id/menu_random_article"
+        android:titleCondensed="@string/menu_random_article_short"
+        android:title="@string/menu_random_article"
+        android:showAsAction="never"/>
     <item android:id="@+id/scan_for_archives"
         android:titleCondensed="@string/menu_scan_short"
         android:title="@string/menu_scan"

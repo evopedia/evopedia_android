@@ -15,6 +15,8 @@
     <string name="menu_send_feedback_short">Feedback</string>
     <string name="menu_online_article">Article at wikipedia.org</string>
     <string name="menu_online_article_short">At wikipedia.org</string>
+    <string name="menu_random_article">Random article</string>
+    <string name="menu_random_article_short">Random article</string>
     <string name="menu_other_languages">In other languages</string>
     <string name="menu_other_languages_short">Other languages</string>
     <string name="choose_language">Choose the Language</string>

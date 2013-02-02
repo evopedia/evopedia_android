@@ -7,7 +7,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import android.app.AlertDialog;
@@ -245,6 +247,8 @@ public class MainActivity extends SherlockFragmentActivity implements
     }
 
     private void loadArticle(Title t) {
+        searchMenuItem.collapseActionView();
+        onMenuItemActionCollapse(null);
         if (t == null) {
             /* TODO show some not-found page */
         } else {
@@ -368,6 +372,18 @@ public class MainActivity extends SherlockFragmentActivity implements
         dialog.show();
     }
 
+    private void showRandomArticle() {
+        LocalArchive a = evopedia.getArchiveManager().getRandomLocalArchive();
+        if (a == null)
+            return;
+
+        Title t = a.getRandomTitle();
+        if (t == null)
+            return;
+
+        loadArticle(t);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -389,6 +405,9 @@ public class MainActivity extends SherlockFragmentActivity implements
                 return true;
             case R.id.menu_other_languages:
                 showOtherLanguagePicker();
+                return true;
+            case R.id.menu_random_article:
+                showRandomArticle();
                 return true;
             case R.id.menu_online_article:
                 if (currentTitle != null) {

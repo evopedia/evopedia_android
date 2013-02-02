@@ -1,10 +1,12 @@
 package info.evopedia;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import android.content.Context;
@@ -42,6 +44,31 @@ public class ArchiveManager {
 
     public StringNormalizer getDefaultNormalizer() {
         return defaultNormalizer;
+    }
+
+    public LocalArchive getRandomLocalArchive() {
+        int numArticles = 0;
+        for (LocalArchive a : defaultLocalArchives.values()) {
+            try {
+                numArticles += Integer.parseInt(a.getNumArticles());
+            } catch (NumberFormatException e) {
+            }
+        }
+        if (numArticles == 0)
+            return null;
+
+        int r = (new Random()).nextInt(numArticles);
+        numArticles = 0;
+        for (LocalArchive a : defaultLocalArchives.values()) {
+            try {
+                int n = Integer.parseInt(a.getNumArticles());
+                if (r < numArticles + n)
+                    return a;
+                numArticles += n;
+            } catch (NumberFormatException e) {
+            }
+        }
+        return null;
     }
 
     private synchronized void updateDefaultLocalArchives() {

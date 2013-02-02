@@ -11,6 +11,8 @@ CLOSED:
    012 links to online wikipedia
    015 starting with deleted archives crashes the app
    016 actionbar title should reflect the article name
+ - in beta6:
+   022 random article as initial page
 OPEN:
    006 select archives to search in
    007 option to select wikipedia mobile stylesheet
@@ -25,12 +27,11 @@ OPEN:
        retry on faster device, turned into hidden option)
    020 use content provider for articles (also in webview)
    021 night mode (theme)
-   022 random article as initial page
    023 page history (plus clear) and bookmarks
    024 "contact developer"
    025 setting to disable network (menu item to allow load for current page)
 DUMP PROCESS:
  010 there are some html files that are redirects -> change them while packaging (fixed)
- 011 wikivoyage
+ 011 wikivoyage (some rendering errors remain)
 
-ideans from 
+ideas from other offline wikipedias

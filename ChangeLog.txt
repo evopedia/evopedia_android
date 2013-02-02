@@ -1,4 +1,12 @@
 
+beta6
+
+  * random articles
+  * bugfixes
+  * closes: #022
+
+ -- Evopedia Developers <devs@evopedia.info> 2013-02-02
+
 beta5
 
   * cleanups, bugfixes

@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Locale;
+import java.util.Random;
 
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Wini;
@@ -155,6 +156,32 @@ public class LocalArchive extends Archive {
         byte[] data = new byte[(int) length];
         f.readFully(data);
         return data;
+    }
+
+    public Title getRandomTitle() {
+        /* long titles are preferred by this method */
+        RandomAccessFile titles;
+        try {
+            titles = new RandomAccessFile(titleFile, "r");
+        } catch (FileNotFoundException exc) {
+            return null;
+        }
+
+        try {
+            long pos = Math.abs((new Random()).nextLong()) % titles.length();
+            titles.seek(pos);
+            byte[] line = readByteLine(titles);
+            pos += line.length + 1;
+            line = readByteLine(titles);
+            if (line.length == 0) { /* EOF */
+                titles.seek(0);
+                pos = 0;
+                line = readByteLine(titles);
+            }
+            return Title.parseTitle(line, this, pos);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public Title getTitle(String name) {

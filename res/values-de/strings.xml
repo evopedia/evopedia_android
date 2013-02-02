@@ -12,6 +12,8 @@
     <string name="menu_send_feedback_short">Rückmeldung</string>
     <string name="menu_online_article">Artikel auf wikipedia.org</string>
     <string name="menu_online_article_short">Auf wikipedia.org</string>
+    <string name="menu_random_article">Zufälliger Artikel</string>
+    <string name="menu_random_article_short">Zufälliger Artikel</string>
     <string name="menu_other_languages">In anderen Sprachen</string>
     <string name="menu_other_languages_short">Andere Sprachen</string>
     <string name="choose_language">Sprache auswählen</string>

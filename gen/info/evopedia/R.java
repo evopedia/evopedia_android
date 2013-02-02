@@ -967,11 +967,12 @@ containing a value of this type.
         public static final int listMode=0x7f060002;
         public static final int menu_online_article=0x7f06003b;
         public static final int menu_other_languages=0x7f06003c;
+        public static final int menu_random_article=0x7f06003d;
         public static final int menu_search_view=0x7f06003a;
-        public static final int menu_send_feedback=0x7f06003e;
-        public static final int menu_settings=0x7f06003f;
+        public static final int menu_send_feedback=0x7f06003f;
+        public static final int menu_settings=0x7f060040;
         public static final int normal=0x7f060001;
-        public static final int scan_for_archives=0x7f06003d;
+        public static final int scan_for_archives=0x7f06003e;
         public static final int searchEditText=0x7f060036;
         public static final int search_bar=0x7f060035;
         public static final int showCustom=0x7f060008;
@@ -1029,7 +1030,7 @@ containing a value of this type.
         public static final int transtbl=0x7f050000;
     }
     public static final class string {
-        public static final int _1f_kb=0x7f0b0021;
+        public static final int _1f_kb=0x7f0b0023;
         /**  Content description for the action bar "home" affordance. [CHAR LIMIT=NONE] 
          */
         public static final int abs__action_bar_home_description=0x7f0b0000;
@@ -1076,13 +1077,15 @@ containing a value of this type.
          */
         public static final int abs__shareactionprovider_share_with_application=0x7f0b0009;
         public static final int app_name=0x7f0b000f;
-        public static final int choose_language=0x7f0b001f;
-        public static final int could_not_find_any_archives_=0x7f0b0022;
-        public static final int external_storage_not_mounted_=0x7f0b0020;
+        public static final int choose_language=0x7f0b0021;
+        public static final int could_not_find_any_archives_=0x7f0b0024;
+        public static final int external_storage_not_mounted_=0x7f0b0022;
         public static final int menu_online_article=0x7f0b001b;
         public static final int menu_online_article_short=0x7f0b001c;
-        public static final int menu_other_languages=0x7f0b001d;
-        public static final int menu_other_languages_short=0x7f0b001e;
+        public static final int menu_other_languages=0x7f0b001f;
+        public static final int menu_other_languages_short=0x7f0b0020;
+        public static final int menu_random_article=0x7f0b001d;
+        public static final int menu_random_article_short=0x7f0b001e;
         public static final int menu_scan=0x7f0b0015;
         public static final int menu_scan_short=0x7f0b0016;
         public static final int menu_search=0x7f0b0017;
@@ -1092,11 +1095,11 @@ containing a value of this type.
         public static final int menu_send_feedback_short=0x7f0b001a;
         public static final int menu_settings=0x7f0b0013;
         public static final int menu_settings_condensed=0x7f0b0014;
-        public static final int pref_titles_infix_search=0x7f0b0024;
-        public static final int pref_titles_infix_search_summ=0x7f0b0025;
+        public static final int pref_titles_infix_search=0x7f0b0026;
+        public static final int pref_titles_infix_search_summ=0x7f0b0027;
         public static final int search_hint=0x7f0b0010;
         public static final int searchdialog_text_hint=0x7f0b0012;
-        public static final int searching_for_archives_=0x7f0b0023;
+        public static final int searching_for_archives_=0x7f0b0025;
     }
     public static final class style {
         /** 
