@@ -244,7 +244,10 @@ public class EvopediaWebServer implements Runnable {
             BufferedReader reader = new BufferedReader(new InputStreamReader(
                     client.getInputStream()));
 
-            String[] tokens = reader.readLine().split(" ");
+            String line = reader.readLine();
+            if (line == null)
+                return;
+            String[] tokens = line.split(" ");
             if (!tokens[0].equals("GET") || tokens.length < 2) {
                 outputHttpHeader(client, "404");
                 return;
