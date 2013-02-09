@@ -1,4 +1,11 @@
 
+beta7
+
+  * word search in titles
+  * closes: #019
+
+ -- Evopedia Developers <devs@evopedia.info> 2013-02-09
+
 beta6
 
   * random articles
