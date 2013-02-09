@@ -2,136 +2,84 @@ package info.evopedia;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
 
 public class TitleInfixIterator extends TitleIterator {
-    private final ByteLineReader lineReader;
-    private final byte[] byteQuery;
-
-    /* Boyer Moore */
-    private final int[] bmBc; /* lastOccurrence */
-    private final int[] bmGs;
+    private final RandomAccessFile indexFile;
+    private long indexPos;
 
     public TitleInfixIterator() {
         super(null, null, null);
-        lineReader = null;
-        byteQuery = null;
-        bmBc = null;
-        bmGs = null;
+        indexFile = null;
+        indexPos = -1;
     }
 
-    public TitleInfixIterator(RandomAccessFile file, String query, LocalArchive archive) {
+    public TitleInfixIterator(RandomAccessFile file, RandomAccessFile indexFile, String query, LocalArchive archive) {
         super(file, query, archive);
-        ByteLineReader lReader = null;
+        this.indexFile = indexFile;
+        this.indexPos = findInitialIndexPos();
+    }
+    private long findInitialIndexPos() {
+        if (query.length() == 0)
+            return 0;
+
+        long lo = 0;
         try {
-            lReader = new ByteLineReader(file);
+            long hi = indexFile.length() / 4;
+            while (lo < hi) {
+                long mid = (lo + hi) / 2;
+                long pos = LittleEndianReader.readUInt32(indexFile, mid * 4);
+                file.seek(pos);
+                byte[] line = LocalArchive.readByteLine(file);
+                if (line.length == 0)
+                    return -1;
+                String nt = normalizer.normalize(new String(line));
+                if (nt.compareTo(query) < 0) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            indexPos = lo;
         } catch (IOException e) {
-            file = null;
+            return -1;
         }
-        lineReader = lReader;
-        byteQuery = new byte[query.length()];
-        /* TODO this only works if the normalizer is in use. if it is not in use,
-         * we can compare everything bytewise
-         */
-        for (int i = 0; i < byteQuery.length; i ++) {
-            byteQuery[i] = (byte) query.charAt(i);
-        }
-
-        bmBc = new int[256];
-        bmGs = new int[byteQuery.length];
-
-        Arrays.fill(bmBc, byteQuery.length);
-        for (int i = 0; i < byteQuery.length - 1; i++)
-            bmBc[(byteQuery[i] & 0xff)] = byteQuery.length - i - 1;
-
-        if (byteQuery.length > 0)
-            preBmGs();
+        return lo;
     }
 
-    private final int[] suffixes() {
-        int f = 0, g = 0, i = 0;
-        int queryLen = byteQuery.length;
-        int[] suffixes = new int[queryLen];
-
-        suffixes[queryLen - 1] = queryLen;
-        g = queryLen - 1;
-        for (i = queryLen - 2; i >= 0; --i) {
-            if (i > g && suffixes[i + queryLen - 1 - f] < i - g) {
-                suffixes[i] = suffixes[i + queryLen - 1 - f];
-            } else {
-                if (i < g)
-                    g = i;
-                f = i;
-                while (g >= 0 && byteQuery[g] == byteQuery[g + queryLen - 1 - f])
-                    --g;
-                suffixes[i] = f - g;
+    private Title readTitleAt(long pos) {
+        /* looks for the first '\n' before pos */
+        byte[] buffer = new byte[32];
+        pos -= 13; /* title header length */
+        try {
+            while (pos > 0) {
+                long lower = Math.max(pos - buffer.length, 0);
+                pos -= 1;
+                file.seek(lower);
+                file.readFully(buffer);
+                for (; pos >= lower; pos --) {
+                    if (buffer[(int) (pos - lower)] == '\n')
+                        return archive.getTitleAtOffset(pos + 1);
+                }
             }
+        } catch (IOException e) {
+            return null;
         }
-        return suffixes;
-    }
-
-    private final void preBmGs() {
-        int i = 0, j = 0;
-        int queryLen = byteQuery.length;
-        int[] suffixes = suffixes();
-
-        Arrays.fill(bmGs, queryLen);
-
-        j = 0;
-        for (i = queryLen - 1; i >= 0; --i) {
-            if (suffixes[i] != i + 1)
-                continue;
-            for (; j < queryLen - 1 - i; ++j) {
-                if (bmGs[j] == queryLen)
-                    bmGs[j] = queryLen - 1 - i;
-            }
-        }
-        for (i = 0; i <= queryLen - 2; ++i)
-            bmGs[queryLen - 1 - suffixes[i]] = queryLen - 1 - i;
+        return archive.getTitleAtOffset(0);
     }
 
     protected Title retrieveNext() {
-        /* TODO remember search results and last offset
-         * then filter the results if the old query is a substring of the new query
-         * (problem: a new instance of the iterator is created)
-         */
-        Title nextTitle = null;
-        try {
-            while (true) {
-                long offset = lineReader.getPosition();
-                byte[] line = lineReader.nextLine();
+        if (indexPos < 0)
+            return null;
 
-                boolean isAscii = true; /* TODO determine that */
-                int queryLen = byteQuery.length;
-                if (isAscii) {
-                    boolean found = false;
-                    for (int j = 15; j <= line.length - queryLen; ) {
-                        int i = queryLen - 1;
-                        while (i >= 0 && byteQuery[i] == line[i + j])
-                            i --;
-                        if (i < 0) {
-                            found = true;
-                            break;
-                        } else {
-                            j += Math.max(bmGs[i], bmBc[(line[j + i] & 0xff)] - queryLen + 1 + i);
-                        }
-                    }
-                    if (found) {
-                        nextTitle = Title.parseTitle(line, archive, offset);
-                        if (nextTitle != null)
-                            return nextTitle;
-                    }
-                } else {
-                    String name = Title.parseNameOnly(line);
-                    if (name == null)
-                        return null;
-                    if (query == null || normalizer.normalize(name).contains(query)) {
-                        nextTitle = Title.parseTitle(line, archive, offset);
-                        if (nextTitle != null)
-                            return nextTitle;
-                    }
-                }
-            }
+        try {
+            indexFile.seek(indexPos * 4);
+            indexPos ++;
+            Title t = readTitleAt(LittleEndianReader.readUInt32(indexFile));
+            if (t == null || t.getName() == null)
+                return null;
+            String tn = normalizer.normalize(t.getName());
+            if (tn.contains(query))
+                return t;
         } catch (IOException ex) {
         }
         return null;

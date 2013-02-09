@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="info.evopedia"
-    android:versionCode="6"
-    android:versionName="beta6" >
+    android:versionCode="7"
+    android:versionName="beta7" >
 
     <uses-sdk
         android:minSdkVersion="3"
@@ -14,7 +14,7 @@
         android:allowBackup="true"
         android:icon="@drawable/evopedia"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/Theme.Sherlock" >
 
         <activity
             android:theme="@style/Theme.Sherlock"

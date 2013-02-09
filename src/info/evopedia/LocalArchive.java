@@ -22,6 +22,7 @@ public class LocalArchive extends Archive {
     private final String directory;
     private final Boolean readable;
     private final File titleFile;
+    private final File titleSearchFile;
     private final File mathIndexFile;
     private final File mathDataFile;
 
@@ -38,9 +39,17 @@ public class LocalArchive extends Archive {
             readable = false;
             mathIndexFile = null;
             mathDataFile = null;
+            titleSearchFile = null;
         } else {
             mathIndexFile = new File(directory, "math.idx");
             mathDataFile = new File(directory, "math.dat");
+
+            /* TODO we could now also use transtbl.dat */
+            if ((new File(directory, "titles_search.idx")).exists()) {
+                titleSearchFile = new File(directory, "titles_search.idx");
+            } else {
+                titleSearchFile = null;
+            }
 
             normalizedTitles = true;
 
@@ -205,7 +214,11 @@ public class LocalArchive extends Archive {
             return new TitlePrefixIterator();
         }
 
+        if (prefix.length() == 0)
+            return new TitlePrefixIterator(titles, prefix, this);
+
         try {
+            /* TODO we should move this to the iterator */
             long lo = 0;
             long hi = titles.length();
 
@@ -243,14 +256,21 @@ public class LocalArchive extends Archive {
         return new TitlePrefixIterator(titles, prefix, this);
     }
 
-    public TitleInfixIterator getTitlesWithInfix(String infix) {
+    public TitleIterator getTitlesWithInfix(String infix) {
+        /* does not return titles that start with infix, obtain them
+         * from getTitlesWithPrefix */
         RandomAccessFile titles;
+        RandomAccessFile titleSearch;
+        if (titleSearchFile == null || !titleSearchFile.exists()) {
+            return new TitleInfixIterator();
+        }
         try {
             titles = new RandomAccessFile(titleFile, "r");
+            titleSearch = new RandomAccessFile(titleSearchFile, "r");
         } catch (FileNotFoundException exc) {
             return new TitleInfixIterator();
         }
-        return new TitleInfixIterator(titles, infix, this);
+        return new TitleInfixIterator(titles, titleSearch, infix, this);
     }
 
     public Title getTitleAtOffset(long offset) {

@@ -190,6 +190,7 @@ public class TitleAdapter extends BaseAdapter implements ArchiveManager.OnArchiv
         if (PreferenceManager.getDefaultSharedPreferences(activity)
                         .getBoolean("pref_titles_infix_search", false)) {
             for (LocalArchive archive : archiveManager.getDefaultLocalArchives().values()) {
+                iterators.add(archive.getTitlesWithPrefix(query));
                 iterators.add(archive.getTitlesWithInfix(query));
             }
         } else {

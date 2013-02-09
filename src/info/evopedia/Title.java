@@ -7,6 +7,7 @@ public class Title implements Comparable<Title> {
     private long titleOffset;
     private String name;
     private short fileNr;
+    private short titleEntryLength;
     private long blockStart;
     private long blockOffset;
     private long articleLength;
@@ -28,6 +29,12 @@ public class Title implements Comparable<Title> {
 
         if (encodedTitle == null || encodedTitle.length < 15)
             return null;
+
+        if (encodedTitle[encodedTitle.length - 1] == '\n') {
+            t.titleEntryLength = (short) (encodedTitle.length);
+        } else {
+            t.titleEntryLength = (short) (encodedTitle.length + 1);
+        }
 
         int escapes = LittleEndianReader.readUInt16(encodedTitle, 0);
         byte[] positionData = new byte[13];
@@ -100,6 +107,10 @@ public class Title implements Comparable<Title> {
 
     public String toString() {
         return getName();
+    }
+
+    public long getNextTitleEntryOffset() {
+        return titleOffset + titleEntryLength;
     }
 
     public boolean isRedirect() {

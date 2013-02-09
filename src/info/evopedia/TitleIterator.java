@@ -18,8 +18,13 @@ public abstract class TitleIterator implements Iterator<Title> {
     public TitleIterator(RandomAccessFile file, String query, LocalArchive archive) {
         this.file = file;
         this.archive = archive;
-        this.normalizer = archive.getStringNormalizer();
-        this.query = normalizer.normalize(query);
+        if (archive == null) {
+            this.normalizer = null;
+            this.query = query;
+        } else {
+            this.normalizer = archive.getStringNormalizer();
+            this.query = normalizer.normalize(query);
+        }
     }
 
     @Override

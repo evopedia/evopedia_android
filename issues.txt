@@ -13,6 +13,8 @@ CLOSED:
    016 actionbar title should reflect the article name
  - in beta6:
    022 random article as initial page
+ - in beta7
+   019 full text search in titles (added index file)
 OPEN:
    006 select archives to search in
    007 option to select wikipedia mobile stylesheet
@@ -23,8 +25,6 @@ OPEN:
        (does not seem necessary, they are not requested twice),
        try to save some memory
    018 add some icons (e.g. disambiguation)
-   019 full text search in titles (takes too long for english wikipedia,
-       retry on faster device, turned into hidden option)
    020 use content provider for articles (also in webview)
    021 night mode (theme)
    023 page history (plus clear) and bookmarks

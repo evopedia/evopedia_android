@@ -298,7 +298,7 @@ public class MainActivity extends SherlockFragmentActivity implements
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        sendFeedback();
+                        sendFeedback(null);
                     }
                 });
         builder.setNegativeButton("Maybe Later", null);
@@ -308,7 +308,7 @@ public class MainActivity extends SherlockFragmentActivity implements
         evopedia.setFeedbackReminderShown();
     }
 
-    private void sendFeedback() {
+    public void sendFeedback(MenuItem it) {
         Intent i = new Intent(Intent.ACTION_SENDTO);
         i.setData(Uri.parse("mailto:devs@evopedia.info"));
         i.putExtra(Intent.EXTRA_SUBJECT, "Evopedia Betatesting Feedback");
@@ -333,7 +333,7 @@ public class MainActivity extends SherlockFragmentActivity implements
         startActivity(i);
     }
 
-    private void showOtherLanguagePicker() {
+    public void showOtherLanguagePicker(MenuItem i) {
         if (currentInterLanguageLinks == null)
             return;
 
@@ -372,7 +372,7 @@ public class MainActivity extends SherlockFragmentActivity implements
         dialog.show();
     }
 
-    private void showRandomArticle() {
+    public void showRandomArticle(MenuItem i) {
         LocalArchive a = evopedia.getArchiveManager().getRandomLocalArchive();
         if (a == null)
             return;
@@ -384,42 +384,28 @@ public class MainActivity extends SherlockFragmentActivity implements
         loadArticle(t);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.scan_for_archives:
-                String storageState = Environment.getExternalStorageState();
-                if (Environment.MEDIA_MOUNTED.equals(storageState)
-                        || Environment.MEDIA_MOUNTED_READ_ONLY
-                                .equals(storageState)) {
-                    LocalArchiveSearcher searcher = new LocalArchiveSearcher(
-                            this);
-                    searcher.execute(Environment.getExternalStorageDirectory());
-                } else {
-                    Toast.makeText(this, R.string.external_storage_not_mounted_,
-                            Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            case R.id.menu_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-            case R.id.menu_other_languages:
-                showOtherLanguagePicker();
-                return true;
-            case R.id.menu_random_article:
-                showRandomArticle();
-                return true;
-            case R.id.menu_online_article:
-                if (currentTitle != null) {
-                    startActivity(new Intent(Intent.ACTION_VIEW, currentTitle.getOrigUri()));
-                }
-                return true;
-            case R.id.menu_send_feedback:
-                sendFeedback();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+    public void scanForArchives(MenuItem i) {
+        String storageState = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(storageState)
+                || Environment.MEDIA_MOUNTED_READ_ONLY
+                        .equals(storageState)) {
+            LocalArchiveSearcher searcher = new LocalArchiveSearcher(
+                    this);
+            searcher.execute(Environment.getExternalStorageDirectory());
+        } else {
+            Toast.makeText(this, R.string.external_storage_not_mounted_,
+                    Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void openArticleOnline(MenuItem i) {
+        if (currentTitle != null) {
+            startActivity(new Intent(Intent.ACTION_VIEW, currentTitle.getOrigUri()));
+        }
+    }
+
+    public void showSettings(MenuItem i) {
+        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     @Override

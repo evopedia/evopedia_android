@@ -23,6 +23,8 @@ public class MergingTitleIterator implements Iterator<Title> {
         Title n = null;
         TitleIterator nit = null;
 
+        /* TODO remove titles that point to the same article as the next title */
+
         for (TitleIterator it : iterators) {
             if (!it.hasNext())
                 continue;
