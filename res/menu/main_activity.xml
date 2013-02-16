@@ -26,6 +26,11 @@
         android:title="@string/menu_scan"
         android:onClick="scanForArchives"
         android:showAsAction="never"/>
+    <item android:id="@+id/menu_add_archive_manually"
+        android:titleCondensed="@string/menu_add_archive_manually_short"
+        android:title="@string/menu_add_archive_manually"
+        android:onClick="addArchiveManually"
+        android:showAsAction="never"/>
     <item android:id="@+id/menu_send_feedback"
         android:titleCondensed="@string/menu_send_feedback_short"
         android:title="@string/menu_send_feedback"

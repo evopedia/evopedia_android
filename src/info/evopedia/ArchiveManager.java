@@ -88,7 +88,7 @@ public class ArchiveManager {
         defaultLocalArchives = newDefaultLocalArchives;
     }
 
-    private boolean addArchive(Archive archive) {
+    public boolean addArchive(Archive archive) {
         ArchiveID id = archive.getID();
 
         synchronized (this) {

@@ -1,4 +1,11 @@
 
+beta8
+
+  * add archives manually
+
+ -- Evopedia Developers <devs@evopedia.info> 2013-02-16
+
+
 beta7
 
   * word search in titles

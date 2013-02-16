@@ -398,6 +398,34 @@ public class MainActivity extends SherlockFragmentActivity implements
         }
     }
 
+    public void addArchiveManually(MenuItem i) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Add Archive");
+        alert.setMessage("Please enter full path to archive");
+
+        final EditText input = new EditText(this);
+        alert.setView(input);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String path = input.getText().toString();
+                ArchiveManager archiveManager = ArchiveManager.getInstance(MainActivity.this);
+                LocalArchive archive = new LocalArchive(path, archiveManager.getDefaultNormalizer());
+                if (archive.isReadable()) {
+                    archiveManager.addArchive(archive);
+                } else {
+                    Toast.makeText(MainActivity.this, "No archive found at " + path + ".",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        alert.setNegativeButton("Cancel", null);
+
+        alert.show();
+    }
+
     public void openArticleOnline(MenuItem i) {
         if (currentTitle != null) {
             startActivity(new Intent(Intent.ACTION_VIEW, currentTitle.getOrigUri()));

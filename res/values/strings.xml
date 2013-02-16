@@ -9,6 +9,8 @@
     <string name="menu_settings_condensed">Settings</string>
     <string name="menu_scan">Scan for archives</string>
     <string name="menu_scan_short">Scan for archives</string>
+    <string name="menu_add_archive_manually">Add archive manually</string>
+    <string name="menu_add_archive_manually_short">Add archive</string>
     <string name="menu_search">Search article</string>
     <string name="menu_search_short">Search</string>
     <string name="menu_send_feedback">Feedback to developers</string>
