@@ -25,6 +25,7 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.util.Log;
 import android.widget.Toast;
 
 public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID, LocalArchive>> implements OnCancelListener {
@@ -60,6 +61,7 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
         try {
             mounts = Utils.readInputStream(new FileInputStream("/proc/mounts"));
         } catch (final Exception e) {
+            Log.d("LocalArchiveSearcher", "Error reading /proc/mounts", e);
             return dirs;
         }
 
@@ -119,7 +121,7 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
         File[] subdirectories = directory.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                return dir.isDirectory();
+                return (new File(dir, filename)).isDirectory();
             }
         });
 
@@ -135,7 +137,7 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
             return;
 
         /* protection against symlink-loops */
-        if (dir.length() >= 800)
+        if (dir.getPath().length() >= 800)
             return;
 
         if ((new File(dir, "titles.idx")).exists() &&
