@@ -1,4 +1,11 @@
 
+beta10
+
+  * bugfix (archive search again)
+
+ -- Evopedia Developers <devs@evopedia.info> 2013-07-05
+
+
 beta9
 
   * bugfix (archive search)
