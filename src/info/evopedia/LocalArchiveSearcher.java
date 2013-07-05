@@ -55,8 +55,8 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
 
     private List<String> findAdditionalStorageLocations(List<String> dirs) {
         ArrayList<String> mountPoints = new ArrayList<String>(dirs);
-        Pattern p = Pattern.compile("^\\S*vold\\S*\\s+(\\S+)\\s+" +
-                                    "(vfat|ntfs|exfat|fat32|ext3|ext4).*");
+        Pattern p = Pattern.compile("^\\S*(vold|fuse)\\S*\\s+(\\S+)\\s+" +
+                                    "(fuse|vfat|ntfs|exfat|fat32|ext3|ext4).*");
         String mounts = "";
         try {
             mounts = Utils.readInputStream(new FileInputStream("/proc/mounts"));
