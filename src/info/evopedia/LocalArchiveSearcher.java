@@ -71,9 +71,9 @@ public class LocalArchiveSearcher extends AsyncTask<File, Integer, Map<ArchiveID
             Matcher m = p.matcher(line);
             if (!m.matches())
                 continue;
-            String mp = m.group(1);
+            String mp = m.group(2);
             if (!mountPoints.contains(mp))
-                mountPoints.add(m.group(1));
+                mountPoints.add(m.group(2));
         }
 
         ArrayList<String> out = new ArrayList<String>(mountPoints.size());
